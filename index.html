@@ -493,7 +493,7 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:linear-gradient(135d
       </div>
       <div class="rapor-bilgi-grid">
         <div class="rapor-bilgi-cell"><span class="rapor-bilgi-lbl">Deney Adı / No</span><span class="rapor-bilgi-val" id="rpr-ad"></span></div>
-        <div class="rapor-bilgi-cell"><span class="rapor-bilgi-lbl">Deney Tarihi</span><span class="rapor-bilgi-val">___ / ___ / 202_</span></div>
+        <div class="rapor-bilgi-cell"><span class="rapor-bilgi-lbl">Deney Tarihi</span><span class="rapor-bilgi-val" id="rpr-tarih">___ / ___ / ____</span></div>
         <div class="rapor-bilgi-cell"><span class="rapor-bilgi-lbl">Öğrencinin Adı Soyadı</span><span class="rapor-bilgi-val"></span></div>
         <div class="rapor-bilgi-cell"><span class="rapor-bilgi-lbl">Sınıfı / Şubesi</span><span class="rapor-bilgi-val"></span></div>
         <div class="rapor-bilgi-cell"><span class="rapor-bilgi-lbl">Öğrenci Numarası</span><span class="rapor-bilgi-val"></span></div>
@@ -8807,6 +8807,11 @@ function openLabRaporuFromDeney(idx) {
 
 function openLabRaporu(denyAdi, aims, materials, procedure) {
   document.getElementById('rpr-ad').textContent = denyAdi || '';
+  var bugun = new Date();
+  document.getElementById('rpr-tarih').textContent =
+    String(bugun.getDate()).padStart(2,'0') + ' / ' +
+    String(bugun.getMonth()+1).padStart(2,'0') + ' / ' +
+    bugun.getFullYear();
   var amacEl = document.getElementById('rpr-amac');
   if (aims) { amacEl.innerHTML = aims; } else { amacEl.innerHTML = '<div class="rapor-satir"></div><div class="rapor-satir"></div>'; }
   var malzemeEl = document.getElementById('rpr-malzeme');
