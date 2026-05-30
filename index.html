@@ -380,6 +380,20 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:linear-gradient(135d
 .tb-kullanici-ad{font-size:12px;color:#7c3aed;font-weight:600;background:#ede9fe;padding:3px 10px;border-radius:7px}
 .tb-cikis-btn{background:#fee2e2;color:#dc2626;border:none;border-radius:7px;padding:4px 10px;font-size:11px;font-weight:700;cursor:pointer}
 .tb-log-btn{background:#fef3c7;color:#92400e;border:none;border-radius:7px;padding:4px 10px;font-size:11px;font-weight:700;cursor:pointer}
+/* === MOBİL UYUMLULUK === */
+.mobile-menu-btn{display:none;background:none;border:none;cursor:pointer;color:#6d28d9;font-size:24px;padding:4px 10px;border-radius:8px;flex-shrink:0;line-height:1;font-weight:700}
+.sidebar-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.45);z-index:250}
+.haftalik-scroll{overflow-x:auto;-webkit-overflow-scrolling:touch;margin-bottom:18px}
+.haftalik-scroll .haftalik-grid{margin-bottom:0!important}
+@media(max-width:767px){
+  .mobile-menu-btn{display:flex;align-items:center}
+  .sidebar{position:fixed!important;left:-270px;top:0;height:100vh;z-index:300;width:260px!important;transition:left .25s ease}
+  .sidebar.open{left:0}
+  .sidebar-overlay.open{display:block}
+  .haftalik-grid{min-width:440px;grid-template-columns:56px repeat(5,minmax(72px,1fr))!important}
+  .search-wrap input{width:120px}
+  .ai-open-btn{font-size:11px;padding:5px 8px}
+}
 </style>
 </head>
 <body>
@@ -393,10 +407,12 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:linear-gradient(135d
     </div>
     <nav class="sidebar-nav" id="sidenav"></nav>
   </aside>
+  <div class="sidebar-overlay" id="sidebar-overlay" onclick="toggleSidebar(false)"></div>
 
   <!-- MAIN -->
   <div class="main">
     <div class="topbar">
+      <button class="mobile-menu-btn" onclick="toggleSidebar()">☰</button>
       <h2 id="topbar-title">Laboratuvar Programı</h2>
       <div class="search-wrap">
         <span class="search-icon">🔍</span>
@@ -8288,6 +8304,14 @@ function toggleAI() {
   document.getElementById('ai-panel').classList.toggle('hidden', !aiOpen);
 }
 
+function toggleSidebar(force) {
+  var sb = document.querySelector('.sidebar');
+  var ov = document.getElementById('sidebar-overlay');
+  var open = typeof force === 'boolean' ? force : !sb.classList.contains('open');
+  sb.classList.toggle('open', open);
+  if (ov) ov.classList.toggle('open', open);
+}
+
 function autoResize(el) {
   el.style.height = 'auto';
   el.style.height = Math.min(el.scrollHeight, 90) + 'px';
@@ -11151,18 +11175,13 @@ function renderAtolyeHaftalikGrid(planlar, buHaftaD) {
       return;
     }
 
-    // Haftalık grid: 70px saat kolonu + 5 gün kolonu (mevcut CSS kullanılıyor)
-    html += '<div class="haftalik-grid">';
+    // Haftalık grid: saat kolonu + 5 gün kolonu
+    html += '<div class="haftalik-scroll"><div class="haftalik-grid">';
 
     // Başlık satırı
     html += '<div class="hg-hdr" style="font-size:10px;color:#a78bfa">Ders</div>';
     for (var gi=0; gi<5; gi++) {
-      var d = new Date(buHaftaD); d.setDate(buHaftaD.getDate()+gi);
-      var isToday = d.getTime()===bugun.getTime();
-      html += '<div class="hg-hdr" style="' + (isToday?'background:linear-gradient(90deg,#fef3c7,#fffbeb);color:#b45309':'') + '">';
-      html += gunIsimleri[gi] + '<br><span style="font-size:11px;font-weight:'+(isToday?'700':'500')+'">' + d.getDate() + ' ' + AY_ADI[d.getMonth()] + '</span>';
-      if (isToday) html += '<br><span style="font-size:9px;background:#f59e0b;color:#fff;border-radius:4px;padding:0 4px">Bugün</span>';
-      html += '</div>';
+      html += '<div class="hg-hdr">' + gunIsimleri[gi] + '</div>';
     }
 
     // Periyot satırları (1–9)
@@ -11192,7 +11211,7 @@ function renderAtolyeHaftalikGrid(planlar, buHaftaD) {
         html += '</div>';
       }
     }
-    html += '</div>';
+    html += '</div></div>';
     html += '</div>';
   });
 
