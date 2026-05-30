@@ -7125,6 +7125,7 @@ function renderYillikPlanlar() {
     html += '</div>';
     html += '<div style="display:flex;gap:5px">';
     html += '<button class="edit-btn" onclick="togglePlanDetay(\'plan-'+realIdx+'\')">Detay ›</button>';
+    html += '<button class="edit-btn" style="background:linear-gradient(135deg,#3b82f6,#1d4ed8);color:#fff" onclick="toggleKazanimPanel('+realIdx+')">📋 Kazanımlar</button>';
     html += '<button style="background:#dc2626;color:#fff;border:none;border-radius:7px;padding:4px 8px;font-size:11px;cursor:pointer;font-weight:700" onclick="silYillikPlan('+realIdx+')">Sil</button>';
     html += '</div></div>';
     // İlerleme
@@ -7181,6 +7182,23 @@ function renderYillikPlanlar() {
       });
     }
     html += '</tbody></table></div></div>';
+    // Kazanım Görüntüleyici Paneli
+    html += '<div id="plan-kazan-'+realIdx+'" style="display:none;border-top:2px solid #3b82f6;padding:14px 16px;background:linear-gradient(135deg,#eff6ff,#f0f9ff)">';
+    html += '<div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:12px">';
+    html += '<span style="font-size:13px;font-weight:800;color:#1d4ed8">📋 Kazanım Görüntüleyici</span>';
+    html += '<button class="edit-btn" style="background:linear-gradient(135deg,#3b82f6,#1d4ed8);color:#fff" onclick="buHaftaGoster('+realIdx+')">📅 Bu Hafta</button>';
+    html += '<select style="border:1px solid #bfdbfe;border-radius:7px;padding:3px 8px;font-size:11px;cursor:pointer;color:#1e40af" id="kazan-hafta-sec-'+realIdx+'" onchange="haftaSecGoster('+realIdx+',this.value)">';
+    html += '<option value="">— Hafta Seç —</option>';
+    if (p.haftalar) {
+      p.haftalar.forEach(function(h, hi) {
+        var kisa = h.konu ? (h.konu.substring(0,22)+(h.konu.length>22?'…':'')) : '';
+        html += '<option value="'+hi+'">'+h.haftaNo+'. Hafta — '+h.pazartesi+(kisa?' ('+kisa+')':'')+'</option>';
+      });
+    }
+    html += '</select>';
+    html += '</div>';
+    html += '<div id="kazan-icerik-'+realIdx+'" style="color:#6b7280;font-size:12px">↑ "Bu Hafta" veya hafta listesinden seçim yapın</div>';
+    html += '</div>';
     html += '</div>';
   });
   html += '</div>';
@@ -7408,6 +7426,70 @@ function silYillikPlan(idx) {
   planlar.splice(idx, 1);
   lsSetYillikPlanlar(planlar);
   renderYillikPlanlar();
+}
+
+function getBuHaftaPazartesi() {
+  var d = new Date();
+  var gun = d.getDay();
+  var diff = gun === 0 ? -6 : 1 - gun;
+  d.setDate(d.getDate() + diff);
+  return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
+}
+
+function toggleKazanimPanel(planIdx) {
+  var el = document.getElementById('plan-kazan-'+planIdx);
+  if (!el) return;
+  var visible = el.style.display !== 'none';
+  el.style.display = visible ? 'none' : 'block';
+  if (!visible) buHaftaGoster(planIdx);
+}
+
+function buHaftaGoster(planIdx) {
+  var buPaz = getBuHaftaPazartesi();
+  var planlar = lsGetYillikPlanlar();
+  var plan = planlar[planIdx]; if (!plan || !plan.haftalar) return;
+  var haftaIdx = -1;
+  plan.haftalar.forEach(function(h, i) { if (h.pazartesi === buPaz) haftaIdx = i; });
+  if (haftaIdx < 0) {
+    var bugun = new Date();
+    var enYakin = null;
+    plan.haftalar.forEach(function(h, i) {
+      var d = new Date(h.pazartesi);
+      if (d <= bugun && (enYakin === null || d > enYakin)) { enYakin = d; haftaIdx = i; }
+    });
+  }
+  gosterKazanimDetay(planIdx, haftaIdx, true);
+}
+
+function haftaSecGoster(planIdx, val) {
+  if (val === '') return;
+  gosterKazanimDetay(planIdx, parseInt(val), false);
+}
+
+function gosterKazanimDetay(planIdx, haftaIdx, buHafta) {
+  var planlar = lsGetYillikPlanlar();
+  var plan = planlar[planIdx]; if (!plan || !plan.haftalar) return;
+  var el = document.getElementById('kazan-icerik-'+planIdx);
+  if (!el) return;
+  if (haftaIdx < 0 || haftaIdx >= plan.haftalar.length) {
+    el.innerHTML = '<div style="color:#9ca3af;font-size:12px">Bu dönem için uygun hafta bulunamadı.</div>';
+    return;
+  }
+  var h = plan.haftalar[haftaIdx];
+  var etiket = buHafta ? '<span style="background:#dbeafe;color:#1d4ed8;padding:2px 8px;border-radius:5px;font-size:10px;font-weight:700;margin-right:6px">📅 Bu Hafta</span>' : '';
+  var html = '<div style="background:white;border-radius:10px;padding:14px;border:1px solid #bfdbfe">';
+  html += '<div style="margin-bottom:10px">'+etiket+'<span style="font-size:14px;font-weight:800;color:#1e40af">'+h.haftaNo+'. Hafta</span></div>';
+  html += '<table style="width:100%;border-collapse:collapse;font-size:12px">';
+  html += '<tr><td style="color:#6b7280;padding:4px 0;width:110px">Tarih</td><td style="font-weight:600;color:#374151">'+h.pazartesi+'</td></tr>';
+  html += '<tr><td style="color:#6b7280;padding:4px 0">Ay</td><td style="font-weight:600;color:#374151">'+(h.ayAd||'—')+'</td></tr>';
+  html += '<tr><td style="color:#6b7280;padding:4px 0">Konu / Deney</td><td style="font-weight:600;color:#374151">'+(h.konu||'—')+'</td></tr>';
+  html += '<tr><td style="color:#6b7280;padding:4px 0">Kazanım</td><td style="font-weight:700;color:#1d4ed8">'+(h.kazanim||'—')+'</td></tr>';
+  html += '<tr><td style="color:#6b7280;padding:4px 0">Durum</td><td><span style="background:'+(h.tamamlandi?'#d1fae5':'#fef3c7')+';color:'+(h.tamamlandi?'#065f46':'#92400e')+';padding:2px 10px;border-radius:6px;font-size:11px;font-weight:700">'+(h.tamamlandi?'✓ Tamamlandı':'○ Bekliyor')+'</span></td></tr>';
+  html += '</table>';
+  html += '</div>';
+  el.innerHTML = html;
+  var sel = document.getElementById('kazan-hafta-sec-'+planIdx);
+  if (sel && !buHafta) sel.value = haftaIdx;
 }
 
 function openYeniPlanModal() {
