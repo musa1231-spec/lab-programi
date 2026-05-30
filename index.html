@@ -9751,13 +9751,6 @@ function getTumDersHavuzu() {
     havuz.push({sinifKey:sk, sinifEtiket:lbl, sinif:ks.sinif,
                 dersAd:'Kimya', saat:2, tur:'kultur', idx:0, isKultur:true});
   });
-  // Kültür Kimyası sınıfları (diğer alanlar)
-  lsGetKulturSiniflar().forEach(function(ks) {
-    var sk  = getKulturSinifKey(ks);
-    var lbl = getKulturSinifEtiket(ks);
-    havuz.push({sinifKey:sk, sinifEtiket:lbl, sinif:ks.sinif,
-                dersAd:'Kimya', saat:2, tur:'kultur', idx:0, isKultur:true});
-  });
   return havuz;
 }
 
