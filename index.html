@@ -407,6 +407,7 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:linear-gradient(135d
       <div class="tb-kullanici" id="tb-kullanici" style="display:none">
         <span class="tb-kullanici-ad" id="tb-kullanici-ad">👤</span>
         <button class="tb-log-btn" id="tb-log-btn" onclick="auditLogGoster()" style="display:none">📋 Kayıtlar</button>
+        <button class="tb-log-btn" id="tb-usr-btn" onclick="kullaniciYonetimiGoster()" style="display:none;background:#f0fdf4;color:#065f46">👥 Kullanıcılar</button>
         <button class="tb-cikis-btn" onclick="cikisYap()">Çıkış</button>
       </div>
     </div>
@@ -11277,8 +11278,80 @@ function topbarGuncelle() {
   var ad = document.getElementById('tb-kullanici-ad');
   var logBtn = document.getElementById('tb-log-btn');
   if (el) el.style.display = 'flex';
-  if (ad) ad.textContent = '👤 ' + k.ad;
+  if (ad) { ad.textContent = '👤 ' + k.ad; ad.style.cursor='pointer'; ad.title='Şifre değiştir'; ad.onclick = function(){ sifreDegistirGoster(null); }; }
   if (logBtn && k.rol === 'admin') logBtn.style.display = 'inline-block';
+  var usrBtn = document.getElementById('tb-usr-btn');
+  if (usrBtn && k.rol === 'admin') usrBtn.style.display = 'inline-block';
+}
+
+// ===== ŞİFRE DEĞİŞTİR =====
+function sifreDegistirGoster(hedefId) {
+  var k = mevcutKullanici();
+  var kendiSifresi = !hedefId || hedefId === k.id;
+  var baslik = kendiSifresi ? '🔑 Şifremi Değiştir' : '🔑 Şifre Sıfırla';
+  var ov = document.createElement('div');
+  ov.className = 'overlay'; ov.id = 'sifre-overlay';
+  ov.onclick = function(e){ if(e.target===ov) ov.remove(); };
+  var body = '';
+  if (kendiSifresi) {
+    body += '<div class="form-row"><label class="form-lbl">Mevcut Şifre</label><input class="form-input" id="sd-eski" type="password" placeholder="Mevcut şifreniz"></div>';
+  }
+  body += '<div class="form-row"><label class="form-lbl">Yeni Şifre</label><input class="form-input" id="sd-yeni" type="password" placeholder="En az 6 karakter"></div>';
+  body += '<div class="form-row"><label class="form-lbl">Yeni Şifre (Tekrar)</label><input class="form-input" id="sd-yeni2" type="password" placeholder="Yeni şifreyi tekrar girin"></div>';
+  body += '<div id="sd-mesaj" style="font-size:12px;min-height:18px;font-weight:600;color:#dc2626"></div>';
+  var modal = document.createElement('div'); modal.className = 'modal'; modal.style.maxWidth='400px';
+  modal.innerHTML = '<div class="modal-hd"><h3>' + baslik + '</h3><button class="modal-close" onclick="document.getElementById(\'sifre-overlay\').remove()">✕</button></div>' +
+    '<div class="modal-body">' + body + '</div>' +
+    '<div class="modal-ft"><button class="btn-secondary" onclick="document.getElementById(\'sifre-overlay\').remove()">İptal</button>' +
+    '<button class="btn-primary" onclick="sifreKaydet(' + (hedefId?hedefId:'null') + ',' + kendiSifresi + ')">💾 Kaydet</button></div>';
+  ov.appendChild(modal); document.body.appendChild(ov);
+}
+
+async function sifreKaydet(hedefId, kendiSifresi) {
+  var k = mevcutKullanici();
+  var yeni = document.getElementById('sd-yeni').value||'';
+  var yeni2 = document.getElementById('sd-yeni2').value||'';
+  var mesajEl = document.getElementById('sd-mesaj');
+  function hata(t){ mesajEl.textContent=t; mesajEl.style.color='#dc2626'; }
+  if (yeni.length < 6) { hata('Şifre en az 6 karakter olmalı.'); return; }
+  if (yeni !== yeni2) { hata('Şifreler eşleşmiyor.'); return; }
+  if (kendiSifresi) {
+    var eski = document.getElementById('sd-eski').value||'';
+    if (!eski) { hata('Mevcut şifrenizi girin.'); return; }
+    var eskiHash = await hashSifre(eski);
+    var chk = await fetch(SB_URL + '/rest/v1/lab_kullanicilar?id=eq.' + k.id + '&sifre_hash=eq.' + eskiHash + '&select=id', { headers: SB_HDR });
+    var chkData = await chk.json();
+    if (!chkData.length) { hata('Mevcut şifre hatalı.'); return; }
+  }
+  var yeniHash = await hashSifre(yeni);
+  var id = kendiSifresi ? k.id : hedefId;
+  var res = await fetch(SB_URL + '/rest/v1/lab_kullanicilar?id=eq.' + id, {
+    method:'PATCH', headers: SB_HDR,
+    body: JSON.stringify({ sifre_hash: yeniHash })
+  });
+  if (res.ok || res.status === 204) {
+    mesajEl.style.color='#059669'; mesajEl.textContent='Şifre başarıyla güncellendi.';
+    auditKaydet('ŞİFRE DEĞİŞİKLİĞİ', 'lab_kullanicilar', { hedef_id: id });
+    setTimeout(function(){ var o=document.getElementById('sifre-overlay'); if(o) o.remove(); }, 1200);
+  } else { hata('Güncelleme başarısız.'); }
+}
+
+async function kullaniciYonetimiGoster() {
+  var res = await fetch(SB_URL + '/rest/v1/lab_kullanicilar?select=id,ad,kullanici_adi,rol,aktif&order=id', { headers: SB_HDR });
+  var liste = await res.json();
+  var ov = document.createElement('div'); ov.className='overlay'; ov.onclick=function(e){if(e.target===ov)ov.remove();};
+  var modal = document.createElement('div'); modal.className='modal'; modal.style.maxWidth='600px';
+  var html = '<div class="modal-hd"><h3>👥 Kullanıcı Yönetimi</h3><button class="modal-close" onclick="this.closest(\'.overlay\').remove()">✕</button></div>';
+  html += '<div class="modal-body">';
+  html += '<table style="width:100%;border-collapse:collapse;font-size:12px"><thead><tr style="background:#faf5ff"><th style="padding:7px 10px;text-align:left;color:#7c3aed;border-bottom:1px solid #e9d5ff">Ad Soyad</th><th style="padding:7px 10px;text-align:left;color:#7c3aed;border-bottom:1px solid #e9d5ff">Kullanıcı Adı</th><th style="padding:7px 10px;color:#7c3aed;border-bottom:1px solid #e9d5ff">Rol</th><th style="padding:7px 10px;color:#7c3aed;border-bottom:1px solid #e9d5ff">İşlem</th></tr></thead><tbody>';
+  liste.forEach(function(u) {
+    var rolBdg = u.rol==='admin'?'background:#fef3c7;color:#92400e':'background:#ede9fe;color:#5b21b6';
+    html += '<tr style="border-bottom:1px solid #f3e8ff"><td style="padding:7px 10px;font-weight:600;color:#1e293b">'+u.ad+'</td><td style="padding:7px 10px;color:#6b7280;font-size:11px">'+u.kullanici_adi+'</td>';
+    html += '<td style="padding:7px 10px;text-align:center"><span style="'+rolBdg+';border-radius:5px;padding:1px 8px;font-size:10px;font-weight:700">'+u.rol+'</span></td>';
+    html += '<td style="padding:7px 10px;text-align:center"><button onclick="this.closest(\'.overlay\').remove();sifreDegistirGoster('+u.id+')" style="background:#ede9fe;color:#6d28d9;border:none;border-radius:6px;padding:3px 10px;font-size:11px;font-weight:600;cursor:pointer">🔑 Şifre Sıfırla</button></td></tr>';
+  });
+  html += '</tbody></table></div>';
+  modal.innerHTML = html; ov.appendChild(modal); document.body.appendChild(ov);
 }
 
 function auditKaydet(islem, anahtar, detay) {
