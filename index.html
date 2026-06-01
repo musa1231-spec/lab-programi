@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="tr">
 <head>
 <meta charset="UTF-8">
@@ -7157,979 +7157,176 @@ function buildSidebar() {
 
 
 // ===== YILLIK PLAN =====
-function lsGetYillikPlanlar() { try { var d=localStorage.getItem('lab_yillik_planlar'); return d?JSON.parse(d):[]; } catch(e){return [];} }
-function lsSetYillikPlanlar(d) { try { localStorage.setItem('lab_yillik_planlar',JSON.stringify(d)); } catch(e){} sbPush('lab_yillik_planlar',d); }
+function lsGetYillikPlanlar() { return []; }
+function lsSetYillikPlanlar(d) {}
 
-function lsGetPdfPlanlar() { try { var d=localStorage.getItem('lab_pdf_planlar'); return d?JSON.parse(d):[]; } catch(e){return [];} }
-function lsSetPdfPlanlar(d) { try { localStorage.setItem('lab_pdf_planlar',JSON.stringify(d)); } catch(e){ toast('PDF kaydedilemedi: depolama dolu olabilir'); } }
+function lsGetYplanDosyalar() { return lsGet('lab_yplan_dosyalar'); }
+function lsSetYplanDosyalar(d) { lsSet('lab_yplan_dosyalar', d); }
 
-function openPdfYukleModal() {
-  var overlay = document.createElement('div');
-  overlay.className = 'overlay'; overlay.id = 'pdf-overlay';
-  overlay.onclick = function(e){ if(e.target===overlay) kapat('pdf-overlay'); };
-  var modal = document.createElement('div');
-  modal.className = 'modal'; modal.style.maxWidth = '460px';
-  modal.innerHTML = '<div class="modal-hd"><h3>PDF Plan Yükle</h3><button class="modal-close" onclick="kapat(\'pdf-overlay\')">✕</button></div>' +
-    '<div class="modal-body">' +
-    '<div class="form-row"><label class="form-lbl">Plan Adı *</label><input class="form-input" id="pf-ad" placeholder="Örn: 11-A Kimya Yıllık Planı"></div>' +
-    '<div class="form-row" style="margin-top:8px"><label class="form-lbl">Öğretmen</label><input class="form-input" id="pf-ogr" placeholder="Ad Soyad"></div>' +
-    '<div class="form-row" style="margin-top:8px"><label class="form-lbl">Sınıf</label><input class="form-input" id="pf-sinif" placeholder="Örn: 11-A"></div>' +
-    '<div id="pdf-drop" style="margin-top:12px;border:2px dashed #c4b5fd;border-radius:12px;padding:20px;text-align:center;background:#faf5ff;cursor:pointer" onclick="document.getElementById(\'pf-file\').click()">' +
-    '<input type="file" id="pf-file" accept=".pdf" style="display:none">' +
-    '<div style="font-size:28px">📄</div>' +
-    '<div style="font-size:13px;font-weight:700;color:#6d28d9;margin-top:6px">PDF dosyasını seçin</div>' +
-    '<div style="font-size:11px;color:#a78bfa;margin-top:4px">Yalnızca .pdf desteklenir • Max 8 MB</div>' +
-    '</div>' +
-    '<div id="pdf-durum" style="font-size:12px;color:#7c3aed;min-height:20px;margin-top:8px"></div>' +
-    '</div>' +
-    '<div class="modal-ft"><button class="btn-secondary" onclick="kapat(\'pdf-overlay\')">İptal</button><button class="btn-primary" id="pf-kaydet-btn" onclick="pdfPlanKaydet()">Kaydet</button></div>';
-  overlay.appendChild(modal);
-  document.body.appendChild(overlay);
-  var pdfB64 = null;
-  document.getElementById('pf-file').onchange = function() {
-    var file = this.files[0];
-    if (!file) return;
-    if (file.size > 8 * 1024 * 1024) { document.getElementById('pdf-durum').textContent = '⚠️ Dosya 8 MB\'dan büyük, yüklenemez.'; return; }
-    document.getElementById('pdf-durum').textContent = '⏳ Yükleniyor: ' + file.name;
-    var reader = new FileReader();
-    reader.onload = function(e) {
-      window._pdfPlanB64 = e.target.result;
-      window._pdfPlanAd = file.name;
-      document.getElementById('pdf-durum').innerHTML = '✅ <strong>' + file.name + '</strong> hazır (' + Math.round(file.size/1024) + ' KB)';
-      document.getElementById('pdf-drop').style.borderColor = '#10b981';
-    };
-    reader.readAsDataURL(file);
-  };
-}
+var yplanAktifSinif = 9;
 
-function pdfPlanKaydet() {
-  var ad = (document.getElementById('pf-ad').value || '').trim();
-  var ogr = (document.getElementById('pf-ogr').value || '').trim();
-  var sinif = (document.getElementById('pf-sinif').value || '').trim();
-  if (!ad) { toast('Plan adı zorunlu'); return; }
-  if (!window._pdfPlanB64) { toast('Önce PDF seçin'); return; }
-  var planlar = lsGetPdfPlanlar();
-  planlar.push({ id: Date.now(), ad: ad, ogretmen: ogr, sinif: sinif, dosyaAd: window._pdfPlanAd||'plan.pdf', tarih: new Date().toLocaleDateString('tr-TR'), pdfData: window._pdfPlanB64 });
-  lsSetPdfPlanlar(planlar);
-  window._pdfPlanB64 = null;
-  kapat('pdf-overlay');
-  render();
-  toast('PDF plan kaydedildi');
-}
-
-function pdfPlanAc(idx) {
-  var planlar = lsGetPdfPlanlar();
-  var plan = planlar[idx];
-  if (!plan || !plan.pdfData) return;
-  var byteStr = atob(plan.pdfData.split(',')[1]);
-  var ab = new ArrayBuffer(byteStr.length);
-  var ia = new Uint8Array(ab);
-  for (var i=0; i<byteStr.length; i++) ia[i] = byteStr.charCodeAt(i);
-  var blob = new Blob([ab], {type:'application/pdf'});
-  var url = URL.createObjectURL(blob);
-  window.open(url, '_blank');
-}
-
-function pdfPlanSil(idx) {
-  if (!confirm('Bu PDF planı silinsin mi?')) return;
-  var planlar = lsGetPdfPlanlar();
-  planlar.splice(idx, 1);
-  lsSetPdfPlanlar(planlar);
-  render();
-  toast('Plan silindi');
-}
-
-var yillikPlanFiltre = '';  // sinifKey filtresi
-
-// MEB takviminden tüm öğretim haftalarını üret
-function getMebHaftalar() {
-  var haftalar = [];
-  var AYLAR = Object.keys(MEB_TAKVIM);
-  var gunIsimleri = ['Pazar','Pazartesi','Salı','Çarşamba','Perşembe','Cuma','Cumartesi'];
-  AYLAR.forEach(function(ayKey) {
-    var ay = MEB_TAKVIM[ayKey];
-    var parca = ayKey.split('-');
-    var yil = parseInt(parca[0]), ayNo = parseInt(parca[1]);
-    // Ayın ilk pazartesisini bul
-    var d = new Date(yil, ayNo-1, 1);
-    var gunFarki = d.getDay()===0 ? 1 : (d.getDay()===1 ? 0 : 8-d.getDay());
-    d.setDate(d.getDate() + gunFarki);
-    // Haftalık döngü
-    var haftaNo = 1;
-    while (d.getMonth() === ayNo-1) {
-      var tarihStr = d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
-      haftalar.push({
-        ayKey: ayKey,
-        ayAd: ay.ad,
-        haftaNo: haftaNo,
-        pazartesi: tarihStr,
-        isGunu: Math.round(ay.isGunu / ay.hafta * 10) / 10
-      });
-      d.setDate(d.getDate()+7);
-      haftaNo++;
-    }
+function yplanGetDersler(sinif) {
+  var g = KIMYA_DERSLER[sinif];
+  if (!g) return [];
+  var liste = [];
+  (g.zorunlu||[]).forEach(function(d){
+    if (d.ad !== 'Kültür Kimya') liste.push({ad:d.ad, saat:d.saat, tur:'zorunlu'});
   });
-  return haftalar;
+  if (sinif === 12) {
+    (g.ATP||[]).forEach(function(d){ liste.push({ad:d.ad, saat:d.saat, tur:'ATP'}); });
+    (g.AMP||[]).forEach(function(d){ liste.push({ad:d.ad, saat:d.saat, tur:'AMP'}); });
+  }
+  (g.secmeli||[]).forEach(function(d){
+    if (d.ad !== 'Kimya') liste.push({ad:d.ad, saat:d.saat, tur:'seçmeli'});
+  });
+  return liste;
 }
 
 function renderYillikPlanlar() {
   document.getElementById('topbar-title').textContent = 'Yıllık Planlar';
   document.getElementById('add-btn').style.display = 'none';
-  var planlar = lsGetYillikPlanlar();
+  var dosyalar = lsGetYplanDosyalar();
   var html = '';
 
-  // Başlık
-  html += '<div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-bottom:14px">';
-  html += '<div>';
-  html += '<div style="font-size:16px;font-weight:800;color:#3b0764">📅 Yıllık Ders Planları</div>';
-  html += '<div style="font-size:11px;color:#7c3aed;margin-top:2px">MEB 2025-2026 iş takvimi ile otomatik bağlantılı</div>';
-  html += '</div>';
-  html += '<button class="add-btn" onclick="openYeniPlanModal()">＋ Yeni Plan</button>';
-  html += '<button class="add-btn" style="background:linear-gradient(135deg,#3b82f6,#1d4ed8)" onclick="openDosyaYukleModal()">&#x2b06; Excel/Word Yükle</button>';
-  html += '<button class="add-btn" style="background:linear-gradient(135deg,#dc2626,#991b1b)" onclick="openPdfYukleModal()">&#x1f4c4; PDF Plan Yükle</button>';
+  html += '<div style="margin-bottom:18px">';
+  html += '<div style="font-size:16px;font-weight:800;color:#3b0764">&#x1f4c5; Yıllık Planlar</div>';
+  html += '<div style="font-size:11px;color:#7c3aed;margin-top:3px">Meslek derslerine ait yıllık plan dosyalarını yükleyin &mdash; PDF, Word, Excel desteklenir</div>';
   html += '</div>';
 
-  // Takvim özeti
-  var toplamHafta = 0;
-  Object.values(MEB_TAKVIM).forEach(function(ay){ toplamHafta += ay.hafta; });
-  html += '<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(110px,1fr));gap:8px;margin-bottom:14px">';
-  var renkler = ['#8b5cf6','#3b82f6','#10b981','#f59e0b'];
-  var istatlar = [
-    {lbl:'Toplam Hafta', val:Math.round(toplamHafta*10)/10, renk:'#8b5cf6'},
-    {lbl:'Toplam İş Günü', val:184, renk:'#3b82f6'},
-    {lbl:'Mevcut Plan', val:planlar.length, renk:'#10b981'},
-    {lbl:'Öğretim Ayı', val:10, renk:'#f59e0b'}
-  ];
-  istatlar.forEach(function(s){
-    html += '<div class="atolye-stat"><div class="atolye-stat-num" style="color:'+s.renk+'">'+s.val+'</div><div class="atolye-stat-lbl">'+s.lbl+'</div></div>';
+  html += '<div style="display:flex;gap:0;margin-bottom:20px;border-bottom:2px solid #e9d5ff">';
+  [9,10,11,12].forEach(function(s) {
+    var aktif = yplanAktifSinif === s;
+    var cnt = dosyalar.filter(function(d){ return d.sinif === s; }).length;
+    html += '<button onclick="yplanSinifSec('+s+')" style="padding:9px 22px;border-radius:10px 10px 0 0;font-size:13px;font-weight:700;cursor:pointer;border:2px solid '+(aktif?'#8b5cf6':'#ddd6fe')+';border-bottom-color:'+(aktif?'#fff':'transparent')+';background:'+(aktif?'#fff':'#faf5ff')+';color:'+(aktif?'#6d28d9':'#9ca3af')+';margin-bottom:-2px">';
+    html += s+'. Sınıf';
+    if (cnt > 0) html += ' <span style="background:#8b5cf6;color:#fff;border-radius:12px;padding:1px 8px;font-size:10px;margin-left:4px">'+cnt+'</span>';
+    html += '</button>';
   });
   html += '</div>';
 
-  // Filtre
-  html += '<div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px;align-items:center">';
-  html += '<span style="font-size:11px;color:#7c3aed;font-weight:700">Filtre:</span>';
-  html += '<button style="padding:3px 10px;border-radius:7px;font-size:11px;cursor:pointer;border:1px solid #ddd6fe;font-weight:600;'+(yillikPlanFiltre===''?'background:linear-gradient(135deg,#8b5cf6,#6d28d9);color:#fff':'background:#faf5ff;color:#6d28d9')+'" onclick="setYillikFiltre(\'\')">Tümü ('+planlar.length+')</button>';
-  var sinifGruplari = {};
-  planlar.forEach(function(p){ if(!sinifGruplari[p.sinifKey]) sinifGruplari[p.sinifKey]=0; sinifGruplari[p.sinifKey]++; });
-  Object.keys(sinifGruplari).forEach(function(sk){
-    html += '<button style="padding:3px 10px;border-radius:7px;font-size:11px;cursor:pointer;border:1px solid #ddd6fe;font-weight:600;'+(yillikPlanFiltre===sk?'background:linear-gradient(135deg,#8b5cf6,#6d28d9);color:#fff':'background:#faf5ff;color:#6d28d9')+'" onclick="setYillikFiltre(\''+sk+'\')">'+sk.replace(/-/g,'.')+'</button>';
-  });
-  html += '</div>';
-
-  var gorunen = yillikPlanFiltre ? planlar.filter(function(p){return p.sinifKey===yillikPlanFiltre;}) : planlar;
-
-  if (!gorunen.length) {
-    html += '<div class="empty" style="margin-top:20px">📅 Henüz yıllık plan eklenmemiş.<br><small>"＋ Yeni Plan" ile ekleyin. İş takvimi baz alınarak otomatik oluşturulur.</small></div>';
+  var dersler = yplanGetDersler(yplanAktifSinif);
+  if (!dersler.length) {
+    html += '<div class="empty">Bu sınıf için ders tanımı bulunamadı.</div>';
     document.getElementById('main-content').innerHTML = html;
     return;
   }
 
-  // Plan kartları
-  html += '<div style="display:flex;flex-direction:column;gap:12px">';
-  gorunen.forEach(function(p, pi) {
-    var realIdx = planlar.indexOf(p);
-    var tamamlanan = p.haftalar ? p.haftalar.filter(function(h){return h.tamamlandi;}).length : 0;
-    var topHafta = p.haftalar ? p.haftalar.length : 0;
-    var yuzde = topHafta>0 ? Math.round(tamamlanan/topHafta*100) : 0;
-    var yukRenk = yuzde===100?'#10b981':yuzde>50?'#f59e0b':'#8b5cf6';
+  html += '<div style="display:flex;flex-direction:column;gap:10px">';
+  dersler.forEach(function(ders) {
+    var dFiles = dosyalar.filter(function(d){ return d.sinif === yplanAktifSinif && d.dersAd === ders.ad; });
+    var turRenk = {zorunlu:'#059669',ATP:'#1d4ed8',AMP:'#7c3aed','seçmeli':'#d97706'}[ders.tur]||'#6b7280';
+    var turBg   = {zorunlu:'#d1fae5',ATP:'#dbeafe',AMP:'#ede9fe','seçmeli':'#fef3c7'}[ders.tur]||'#f3f4f6';
 
-    html += '<div style="background:rgba(255,255,255,0.97);border-radius:14px;border:1px solid #e9d5ff;overflow:hidden;box-shadow:0 2px 8px rgba(139,92,246,0.07)">';
-    // Kart başlığı
-    html += '<div style="background:linear-gradient(90deg,#fdf4ff,#eff6ff);padding:12px 16px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid #e9d5ff">';
-    html += '<div>';
+    html += '<div style="background:#fff;border-radius:14px;border:1px solid #e9d5ff;overflow:hidden;box-shadow:0 2px 8px rgba(139,92,246,0.06)">';
+
+    html += '<div style="background:linear-gradient(90deg,#fdf4ff,#eff6ff);padding:11px 16px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;border-bottom:1px solid #e9d5ff">';
     html += '<div style="display:flex;align-items:center;gap:8px">';
-    html += '<span style="background:linear-gradient(135deg,#8b5cf6,#6d28d9);color:#fff;border-radius:6px;padding:2px 10px;font-size:11px;font-weight:700">'+p.sinifKey.replace(/-/g,'.')+'</span>';
-    html += '<span style="font-size:14px;font-weight:800;color:#3b0764">'+p.dersAd+'</span>';
+    html += '<span style="background:'+turBg+';color:'+turRenk+';border-radius:6px;padding:2px 9px;font-size:10px;font-weight:700">'+ders.tur+'</span>';
+    html += '<span style="font-size:14px;font-weight:800;color:#3b0764">'+ders.ad+'</span>';
+    html += '<span style="font-size:11px;color:#a78bfa">'+ders.saat+' s/hf</span>';
     html += '</div>';
-    html += '<div style="font-size:11px;color:#7c3aed;margin-top:3px">'+p.ogretmen+' &bull; '+topHafta+' hafta &bull; 2025-2026</div>';
+    var dersAdJs = ders.ad.replace(/\\/g,'\\\\').replace(/'/g,"\\'");
+    html += '<label style="display:inline-flex;align-items:center;gap:5px;background:linear-gradient(135deg,#8b5cf6,#6d28d9);color:#fff;border-radius:8px;padding:7px 15px;font-size:12px;font-weight:700;cursor:pointer">';
+    html += '<input type="file" accept=".pdf,.doc,.docx,.xls,.xlsx" style="display:none" onchange="yplanDosyaYukle(event,'+yplanAktifSinif+',\''+dersAdJs+'\')">';
+    html += '+ Plan Y&uuml;kle</label>';
     html += '</div>';
-    html += '<div style="display:flex;gap:5px">';
-    html += '<button class="edit-btn" onclick="togglePlanDetay(\'plan-'+realIdx+'\')">Detay ›</button>';
-    html += '<button style="background:#dc2626;color:#fff;border:none;border-radius:7px;padding:4px 8px;font-size:11px;cursor:pointer;font-weight:700" onclick="silYillikPlan('+realIdx+')">Sil</button>';
+
+    html += '<div style="padding:10px 16px">';
+    if (!dFiles.length) {
+      html += '<div style="font-size:12px;color:#9ca3af;font-style:italic;padding:2px 0">Henüz dosya yüklenmedi</div>';
+    } else {
+      dFiles.forEach(function(dosya) {
+        var rc  = {pdf:'#dc2626',word:'#1d4ed8',excel:'#059669'}[dosya.dosyaTur]||'#374151';
+        var rbg = {pdf:'#fff1f2',word:'#eff6ff',excel:'#f0fdf4'}[dosya.dosyaTur]||'#f9fafb';
+        var ikon = {pdf:'&#x1f4c4;',word:'&#x1f4dd;',excel:'&#x1f4ca;'}[dosya.dosyaTur]||'&#x1f4c1;';
+        html += '<div style="display:flex;align-items:center;justify-content:space-between;background:'+rbg+';border:1px solid '+rc+'30;border-radius:9px;padding:9px 13px;margin-bottom:6px">';
+        html += '<div style="display:flex;align-items:center;gap:10px">';
+        html += '<span style="font-size:22px">'+ikon+'</span>';
+        html += '<div><div style="font-size:12px;font-weight:700;color:#1e1b4b">'+dosya.dosyaAd+'</div>';
+        html += '<div style="font-size:10px;color:#6b7280;margin-top:1px">'+dosya.tarih+'</div></div>';
+        html += '</div>';
+        html += '<div style="display:flex;gap:5px">';
+        html += '<button onclick="yplanDosyaAc(\''+dosya.id+'\')" style="background:'+rc+';color:#fff;border:none;border-radius:7px;padding:5px 13px;font-size:11px;font-weight:700;cursor:pointer">A&#xe7;</button>';
+        html += '<button onclick="yplanDosyaSil(\''+dosya.id+'\')" style="background:#fee2e2;color:#dc2626;border:none;border-radius:7px;padding:5px 9px;font-size:11px;font-weight:700;cursor:pointer">Sil</button>';
+        html += '</div></div>';
+      });
+    }
     html += '</div></div>';
-    // İlerleme
-    html += '<div style="padding:10px 16px;border-bottom:1px solid #f3e8ff">';
-    html += '<div style="display:flex;justify-content:space-between;font-size:11px;color:#6b7280;margin-bottom:4px">';
-    html += '<span>İlerleme: <strong id="plan-progress-'+realIdx+'" style="color:'+yukRenk+'">'+tamamlanan+'/'+topHafta+' hafta (%'+yuzde+')</strong></span>';
-    html += '<span>'+p.haftaBasina+'s/hafta</span>';
-    html += '</div>';
-    html += '<div class="yuk-bar"><div class="yuk-bar-ic" style="width:'+yuzde+'%;background:'+yukRenk+'"></div></div>';
-    html += '</div>';
-    // Detay tablosu (gizli)
-    html += '<div id="plan-'+realIdx+'" style="display:none">';
-    // Toplu işlem araç çubuğu
-    html += '<div style="display:flex;gap:6px;flex-wrap:wrap;align-items:center;padding:8px 12px;background:#f5f3ff;border-bottom:1px solid #e9d5ff">';
-    html += '<span style="font-size:11px;color:#7c3aed;font-weight:700">Toplu İşlem:</span>';
-    html += '<button class="edit-btn" style="background:linear-gradient(135deg,#10b981,#059669);color:#fff" onclick="topluTamamla('+realIdx+',true)">✓ Tümünü Tamamlandı</button>';
-    html += '<button class="edit-btn" style="background:#fee2e2;color:#dc2626" onclick="topluTamamla('+realIdx+',false)">✕ Tümünü Sıfırla</button>';
-    html += '<button class="edit-btn" onclick="topluAyTamamla('+realIdx+')" title="Aynı aydaki tüm haftaları işaretle">Ay Bazlı ▼</button>';
-    html += '<span style="font-size:10px;color:#9ca3af;margin-left:4px">veya Shift+tıklama ile aralık seçin</span>';
-    html += '</div>';
-    html += '<div id="ay-menu-'+realIdx+'" style="display:none;padding:8px 12px;background:#fdf4ff;border-bottom:1px solid #e9d5ff;display:flex;gap:6px;flex-wrap:wrap">';
-    if (p.haftalar) {
-      var aylar = {};
-      p.haftalar.forEach(function(h){ if(!aylar[h.ayKey]) aylar[h.ayKey]=h.ayAd; });
-      Object.keys(aylar).forEach(function(ak){
-        html += '<button class="edit-btn" style="font-size:10px" onclick="topluAyIsaretle('+realIdx+',\''+ak+'\',true)">✓ '+aylar[ak].split(' ')[0]+'</button>';
-      });
-    }
-    html += '</div>';
-    html += '<div style="overflow-x:auto"><table style="width:100%;border-collapse:collapse;font-size:12px" id="plan-tablo-'+realIdx+'">';
-    html += '<thead><tr style="background:#faf5ff">';
-    html += '<th style="padding:7px 8px;text-align:center;font-size:10px;color:#7c3aed;font-weight:700;border-bottom:1px solid #e9d5ff;width:36px"><input type="checkbox" id="master-chk-'+realIdx+'" title="Tümünü seç" style="width:14px;height:14px;accent-color:#8b5cf6;cursor:pointer" onchange="masterCheckbox('+realIdx+',this.checked)"></th>';
-    html += '<th style="padding:7px 8px;text-align:left;font-size:10px;color:#7c3aed;font-weight:700;border-bottom:1px solid #e9d5ff">Hf</th>';
-    html += '<th style="padding:7px 8px;text-align:left;font-size:10px;color:#7c3aed;font-weight:700;border-bottom:1px solid #e9d5ff">Tarih</th>';
-    html += '<th style="padding:7px 8px;text-align:left;font-size:10px;color:#7c3aed;font-weight:700;border-bottom:1px solid #e9d5ff">Ay</th>';
-    html += '<th style="padding:7px 8px;text-align:left;font-size:10px;color:#7c3aed;font-weight:700;border-bottom:1px solid #e9d5ff">Konu / Deney</th>';
-    html += '<th style="padding:7px 8px;text-align:center;font-size:10px;color:#7c3aed;font-weight:700;border-bottom:1px solid #e9d5ff">Bitti</th></tr></thead><tbody>';
-    if (p.haftalar) {
-      p.haftalar.forEach(function(h, hi) {
-        var trId = 'htr-'+realIdx+'-'+hi;
-        html += '<tr id="'+trId+'" style="border-bottom:1px solid #f3e8ff;background:'+(h.tamamlandi?'#f0fdf4':'white')+'" data-planidx="'+realIdx+'" data-haftaidx="'+hi+'">';
-        html += '<td style="padding:4px 8px;text-align:center">';
-        html += '<input type="checkbox" class="row-chk" data-planidx="'+realIdx+'" data-idx="'+hi+'" style="width:14px;height:14px;accent-color:#8b5cf6;cursor:pointer" onchange="rowCheckChange(event,'+realIdx+','+hi+')">';
-        html += '</td>';
-        html += '<td style="padding:6px 8px;font-weight:700;color:#4c1d95">'+h.haftaNo+'</td>';
-        html += '<td style="padding:6px 8px;color:#374151;white-space:nowrap">'+h.pazartesi+'</td>';
-        html += '<td style="padding:6px 8px;color:#7c3aed;font-size:11px;white-space:nowrap">'+h.ayAd.split(' ')[0]+'</td>';
-        html += '<td style="padding:6px 8px">';
-        html += '<input style="width:100%;border:1px solid #ddd6fe;border-radius:5px;padding:3px 7px;font-size:11px;background:#faf5ff" value="'+(h.konu||'').replace(/"/g,"&quot;")+'" onchange="kaydetHaftaKonu('+realIdx+','+hi+',this.value)" placeholder="Konu...">';
-        html += '</td>';
-        html += '<td style="padding:6px 8px;text-align:center">';
-        html += '<input type="checkbox"'+(h.tamamlandi?' checked':'')+' class="tamam-chk" data-planidx="'+realIdx+'" data-idx="'+hi+'" style="width:16px;height:16px;accent-color:#10b981;cursor:pointer" onclick="tamamChkTikla(event,'+realIdx+','+hi+')">';
-        html += '</td></tr>';
-      });
-    }
-    html += '</tbody></table></div></div>';
-    html += '</div>';
   });
   html += '</div>';
-
-  // ── Yıllık Planı Girilmemiş Dersler ──────────────────────────────────────
-  var planliCiftler = {};
-  lsGetYillikPlanlar().forEach(function(p) {
-    planliCiftler[p.sinifKey + '||' + p.dersAd] = true;
-  });
-
-  var plansizilar = [];
-  KIMYA_SINIFLAR.forEach(function(s) {
-    var sk = getSinifKey(s);
-    getSinifTumDersler(sk).forEach(function(d) {
-      var anahtar = sk + '||' + d.ad;
-      if (!planliCiftler[anahtar]) {
-        plansizilar.push({ sinifKey: sk, sinifEtiket: getSinifEtiket(s), sinif: s.sinif, dersAd: d.ad, saat: d.saat, tur: d.tur });
-      }
-    });
-  });
-
-  if (plansizilar.length > 0) {
-    html += '<div style="margin-top:20px;border-top:2px dashed #fed7aa;padding-top:16px">';
-    html += '<div style="display:flex;align-items:center;gap:10px;margin-bottom:12px;flex-wrap:wrap">';
-    html += '<div style="font-size:14px;font-weight:800;color:#92400e">⚠️ Yıllık Planı Girilmemiş Dersler</div>';
-    html += '<span style="background:#fef3c7;color:#92400e;border-radius:7px;padding:3px 10px;font-size:11px;font-weight:700">' + plansizilar.length + ' ders</span>';
-    html += '</div>';
-
-    // Sınıfa göre grupla
-    var gruplar = {};
-    plansizilar.forEach(function(item) {
-      if (!gruplar[item.sinifKey]) gruplar[item.sinifKey] = { etiket: item.sinifEtiket, sinif: item.sinif, dersler: [] };
-      gruplar[item.sinifKey].dersler.push(item);
-    });
-
-    Object.keys(gruplar).forEach(function(sk) {
-      var g = gruplar[sk];
-      html += '<div style="background:rgba(255,255,255,0.96);border-radius:12px;border:1px solid #fed7aa;margin-bottom:12px;overflow:hidden">';
-      html += '<div style="background:linear-gradient(90deg,#fffbeb,#fef3c7);padding:9px 14px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid #fde68a">';
-      html += '<span style="background:linear-gradient(135deg,#f59e0b,#d97706);color:#fff;border-radius:6px;padding:2px 10px;font-size:11px;font-weight:700">' + g.etiket + '</span>';
-      html += '<span style="font-size:11px;color:#92400e">' + g.dersler.length + ' ders planlanmamış</span>';
-      html += '</div>';
-
-      g.dersler.forEach(function(item) {
-        // Bu derse ait DENEY_LISTESI'nden deneyler
-        var ilgiliDeneyler = DENEY_LISTESI.filter(function(d) {
-          return (d.unite || '').toLowerCase().indexOf(item.dersAd.toLowerCase()) >= 0 ||
-                 (d.dersLabel || '').toLowerCase().indexOf(item.dersAd.toLowerCase()) >= 0 ||
-                 (d.ad || '').length > 0;
-        });
-        var turBdg = item.tur === 'secmeli' ? 'db-s' : item.tur === 'kultur' ? 'db-k' : 'db-z';
-
-        html += '<div style="padding:10px 14px;border-bottom:1px solid #fef3c7">';
-        html += '<div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:6px;margin-bottom:8px">';
-        html += '<div style="display:flex;align-items:center;gap:7px">';
-        html += '<span class="' + turBdg + '">' + item.saat + 's</span>';
-        html += '<span style="font-size:13px;font-weight:700;color:#374151">' + item.dersAd + '</span>';
-        html += '</div>';
-        html += '<button class="add-btn" style="font-size:10px;padding:4px 10px;background:linear-gradient(135deg,#f59e0b,#d97706)" onclick="hizliYillikPlanOlustur(\'' + sk + '\',\'' + item.dersAd.replace(/'/g,"\\'") + '\',' + item.saat + ')">＋ Plan Oluştur</button>';
-        html += '</div>';
-
-        if (ilgiliDeneyler.length > 0) {
-          html += '<div style="display:flex;flex-wrap:wrap;gap:4px">';
-          ilgiliDeneyler.slice(0, 12).forEach(function(d) {
-            var dpPlan = getDeneyPlanlamaHaftalari(d.ad);
-            var planlandi = dpPlan.length > 0;
-            html += '<span style="background:' + (planlandi ? '#d1fae5' : '#f3f4f6') + ';color:' + (planlandi ? '#065f46' : '#374151') + ';border:1px solid ' + (planlandi ? '#bbf7d0' : '#e5e7eb') + ';border-radius:6px;padding:2px 8px;font-size:10px;font-weight:600">' + d.ad + (planlandi ? ' ✓' : '') + '</span>';
-          });
-          if (ilgiliDeneyler.length > 12) html += '<span style="font-size:10px;color:#9ca3af;padding:2px 5px">+ ' + (ilgiliDeneyler.length - 12) + ' deney daha</span>';
-          html += '</div>';
-        } else {
-          html += '<div style="font-size:11px;color:#9ca3af;font-style:italic">Bağlantılı deney kartı bulunamadı — Deney Yönetimi\'nden ekleyebilirsiniz</div>';
-        }
-        html += '</div>';
-      });
-      html += '</div>';
-    });
-    html += '</div>';
-  }
-
-  // PDF Planlar bölümü
-  var pdfPlanlar = lsGetPdfPlanlar();
-  html += '<div style="margin-top:20px">';
-  html += '<div style="font-size:14px;font-weight:800;color:#3b0764;margin-bottom:10px">📄 Yüklenen PDF Planlar <span style="font-size:11px;font-weight:400;color:#7c3aed">('+pdfPlanlar.length+' plan)</span></div>';
-  if (!pdfPlanlar.length) {
-    html += '<div style="font-size:12px;color:#9ca3af;padding:12px 0">"PDF Plan Yükle" butonu ile PDF planlarınızı yükleyin; buradan açabilirsiniz.</div>';
-  } else {
-    html += '<div style="display:flex;flex-direction:column;gap:8px">';
-    pdfPlanlar.forEach(function(p, i) {
-      html += '<div style="background:#fff;border-radius:12px;border:1px solid #fecaca;padding:12px 16px;display:flex;align-items:center;justify-content:space-between;box-shadow:0 1px 4px rgba(220,38,38,0.07);cursor:pointer" onclick="pdfPlanAc('+i+')">';
-      html += '<div>';
-      html += '<div style="font-size:13px;font-weight:700;color:#1e1b4b">'+p.ad+'</div>';
-      html += '<div style="font-size:11px;color:#6b7280;margin-top:2px">';
-      if (p.sinif) html += p.sinif + ' &bull; ';
-      if (p.ogretmen) html += p.ogretmen + ' &bull; ';
-      html += p.tarih + ' &bull; ' + (p.dosyaAd||'plan.pdf');
-      html += '</div></div>';
-      html += '<div style="display:flex;gap:6px;align-items:center">';
-      html += '<button class="edit-btn" style="background:linear-gradient(135deg,#dc2626,#991b1b);color:#fff" onclick="event.stopPropagation();pdfPlanAc('+i+')">&#x1f4c4; Aç</button>';
-      html += '<button style="background:#fee2e2;color:#dc2626;border:none;border-radius:7px;padding:4px 8px;font-size:11px;cursor:pointer;font-weight:700" onclick="event.stopPropagation();pdfPlanSil('+i+')">Sil</button>';
-      html += '</div></div>';
-    });
-    html += '</div>';
-  }
-  html += '</div>';
-
   document.getElementById('main-content').innerHTML = html;
 }
 
-function hizliYillikPlanOlustur(sinifKey, dersAd, saat) {
-  // Otomatik plan oluştur ve sayfayı güncelle
-  var mebHaftalar = getMebHaftalar();
-  var ilgiliDeneyler = DENEY_LISTESI.filter(function(d) {
-    return (d.unite || '').toLowerCase().indexOf(dersAd.toLowerCase()) >= 0 ||
-           (d.dersLabel || '').toLowerCase().indexOf(dersAd.toLowerCase()) >= 0;
-  });
-  var haftalar = mebHaftalar.map(function(h, i) {
-    var deney = ilgiliDeneyler[i % (ilgiliDeneyler.length || 1)];
-    return { haftaNo: i+1, ayKey: h.ayKey, ayAd: h.ayAd, pazartesi: h.pazartesi,
-             konu: deney ? deney.ad : '', tamamlandi: false };
-  });
-  var plan = { sinifKey: sinifKey, dersAd: dersAd, ogretmen: '', haftaBasina: saat,
-               yil: '2025-2026', olusturmaTarihi: new Date().toISOString().split('T')[0], haftalar: haftalar };
-  var planlar = lsGetYillikPlanlar();
-  planlar.push(plan);
-  lsSetYillikPlanlar(planlar);
-  renderYillikPlanlar();
-}
+function yplanSinifSec(s) { yplanAktifSinif = s; renderYillikPlanlar(); }
 
-function setYillikFiltre(sk) { yillikPlanFiltre = sk; renderYillikPlanlar(); }
-
-function togglePlanDetay(id) {
-  var el = document.getElementById(id);
-  if (el) el.style.display = el.style.display==='none' ? 'block' : 'none';
-}
-
-function kaydetHaftaKonu(planIdx, haftaIdx, konu) {
-  var planlar = lsGetYillikPlanlar();
-  if (planlar[planIdx] && planlar[planIdx].haftalar[haftaIdx])
-    planlar[planIdx].haftalar[haftaIdx].konu = konu;
-  lsSetYillikPlanlar(planlar);
-}
-
-function kaydetHaftaTamamlandi(planIdx, haftaIdx, val) {
-  var planlar = lsGetYillikPlanlar();
-  if (planlar[planIdx] && planlar[planIdx].haftalar[haftaIdx])
-    planlar[planIdx].haftalar[haftaIdx].tamamlandi = val;
-  lsSetYillikPlanlar(planlar);
-  // Satır rengini güncelle (tam yeniden render olmadan)
-  var tr = document.querySelector('#plan-tablo-'+planIdx+' tr[data-planidx="'+planIdx+'"][data-haftaidx="'+haftaIdx+'"]');
-  if (tr) tr.style.background = val ? '#f0fdf4' : 'white';
-  // İlerleme barını güncelle
-  guncelleIlerlemeBar(planIdx);
-}
-
-function guncelleIlerlemeBar(planIdx) {
-  var planlar = lsGetYillikPlanlar();
-  var plan = planlar[planIdx]; if (!plan) return;
-  var tam = plan.haftalar.filter(function(h){return h.tamamlandi;}).length;
-  var top = plan.haftalar.length;
-  var yuz = top > 0 ? Math.round(tam/top*100) : 0;
-  var yukRenk = yuz===100?'#10b981':yuz>50?'#f59e0b':'#8b5cf6';
-  var bar = document.querySelector('#plan-'+planIdx+' .yuk-bar-ic');
-  if (bar) { bar.style.width = yuz+'%'; bar.style.background = yukRenk; }
-  var txt = document.querySelector('#plan-progress-'+planIdx);
-  if (txt) txt.textContent = tam+'/'+top+' hafta (%'+yuz+')';
-}
-
-
-var sonTamamTiklanan = {};  // planIdx -> last clicked tamam index
-
-function tamamChkTikla(e, planIdx, haftaIdx) {
-  var yeniDeger = e.target.checked;
-  if (e.shiftKey && sonTamamTiklanan[planIdx] !== undefined) {
-    // Shift+tıklama: aralıktaki tüm kutucukları işaretle
-    var baslangic = Math.min(sonTamamTiklanan[planIdx], haftaIdx);
-    var bitis     = Math.max(sonTamamTiklanan[planIdx], haftaIdx);
-    var planlar   = lsGetYillikPlanlar();
-    var plan      = planlar[planIdx]; if (!plan) return;
-    for (var i = baslangic; i <= bitis; i++) {
-      if (plan.haftalar[i]) plan.haftalar[i].tamamlandi = yeniDeger;
-      // DOM güncelle
-      var chk = document.querySelector('.tamam-chk[data-planidx="'+planIdx+'"][data-idx="'+i+'"]');
-      if (chk) chk.checked = yeniDeger;
-      var tr = document.querySelector('#plan-tablo-'+planIdx+' tr[data-planidx="'+planIdx+'"][data-haftaidx="'+i+'"]');
-      if (tr) tr.style.background = yeniDeger ? '#f0fdf4' : 'white';
-    }
-    lsSetYillikPlanlar(planlar);
-    guncelleIlerlemeBar(planIdx);
-  } else {
-    // Normal tıklama
-    kaydetHaftaTamamlandi(planIdx, haftaIdx, yeniDeger);
-  }
-  sonTamamTiklanan[planIdx] = haftaIdx;
-}
-
-var sonTiklananHafta = {}; // planIdx -> last clicked row index (shift+click için)
-
-function masterCheckbox(planIdx, val) {
-  document.querySelectorAll('.row-chk[data-planidx="'+planIdx+'"]').forEach(function(chk){
-    chk.checked = val;
-  });
-}
-
-function rowCheckChange(e, planIdx, haftaIdx) {
-  if (e.shiftKey && sonTiklananHafta[planIdx] !== undefined) {
-    var baslangic = Math.min(sonTiklananHafta[planIdx], haftaIdx);
-    var bitis     = Math.max(sonTiklananHafta[planIdx], haftaIdx);
-    var yeniDeger = e.target.checked;
-    document.querySelectorAll('.row-chk[data-planidx="'+planIdx+'"]').forEach(function(chk){
-      var idx = parseInt(chk.getAttribute('data-idx'));
-      if (idx >= baslangic && idx <= bitis) chk.checked = yeniDeger;
-    });
-  }
-  sonTiklananHafta[planIdx] = haftaIdx;
-}
-
-function topluTamamla(planIdx, val) {
-  // Seçili satırlar varsa sadece onları, yoksa tümünü işaretle
-  var seciliChklar = document.querySelectorAll('.row-chk[data-planidx="'+planIdx+'"]:checked');
-  var planlar = lsGetYillikPlanlar();
-  var plan = planlar[planIdx]; if (!plan) return;
-  if (seciliChklar.length > 0) {
-    seciliChklar.forEach(function(chk){
-      var idx = parseInt(chk.getAttribute('data-idx'));
-      if (plan.haftalar[idx]) plan.haftalar[idx].tamamlandi = val;
-    });
-  } else {
-    plan.haftalar.forEach(function(h){ h.tamamlandi = val; });
-  }
-  lsSetYillikPlanlar(planlar);
-  renderYillikPlanlar();
-}
-
-function topluAyTamamla(planIdx) {
-  var menu = document.getElementById('ay-menu-'+planIdx);
-  if (menu) menu.style.display = menu.style.display === 'none' ? 'flex' : 'none';
-}
-
-function topluAyIsaretle(planIdx, ayKey, val) {
-  var planlar = lsGetYillikPlanlar();
-  var plan = planlar[planIdx]; if (!plan) return;
-  plan.haftalar.forEach(function(h){ if (h.ayKey === ayKey) h.tamamlandi = val; });
-  lsSetYillikPlanlar(planlar);
-  renderYillikPlanlar();
-}
-
-function silYillikPlan(idx) {
-  if (!confirm('Bu plan silinecek. Devam?')) return;
-  var planlar = lsGetYillikPlanlar();
-  planlar.splice(idx, 1);
-  lsSetYillikPlanlar(planlar);
-  renderYillikPlanlar();
-}
-
-function openYeniPlanModal() {
-  var sinifOpts = '<option value="">— Sınıf Seç —</option>';
-  KIMYA_SINIFLAR.forEach(function(s) {
-    var sk = getSinifKey(s);
-    sinifOpts += '<option value="'+sk+'">'+getSinifEtiket(s)+'</option>';
-  });
-
-  var ogretmenOpts = '<option value="">— Öğretmen Seç —</option>';
-  lsGetPersonel().forEach(function(p) {
-    ogretmenOpts += '<option value="'+p.ad+'">'+p.ad+'</option>';
-  });
-
-  var body = '';
-  body += '<div class="form-row"><label class="form-lbl">Sınıf *</label><select class="form-select" id="yp-sinif" onchange="yeniPlanDersGuncelle()">'+sinifOpts+'</select></div>';
-  body += '<div class="form-row"><label class="form-lbl">Ders *</label><select class="form-select" id="yp-ders" onchange="yeniPlanDeneyGuncelle()"><option value="">— Önce sınıf seçin —</option></select></div>';
-  body += '<div class="form-row"><label class="form-lbl">Öğretmen</label><select class="form-select" id="yp-ogretmen">'+ogretmenOpts+'</select></div>';
-  body += '<div class="form-grid">';
-  body += '<div class="form-row"><label class="form-lbl">Haftalık Ders Saati</label><input class="form-input" id="yp-saat" type="number" min="1" max="10" value="7" readonly style="background:#f5f3ff"></div>';
-  body += '<div class="form-row"><label class="form-lbl">Toplam Öğretim Haftası</label><input class="form-input" id="yp-hafta" type="number" min="1" max="50" value="36" readonly style="background:#f5f3ff"></div>';
-  body += '</div>';
-  body += '<div id="yp-deney-ozet" style="background:#f0fdf4;border-radius:8px;padding:8px 10px;font-size:11px;color:#065f46;display:none;margin-top:4px"></div>';
-  body += '<div style="background:#eff6ff;border-radius:8px;padding:8px 10px;font-size:11px;color:#1e40af;margin-top:8px">';
-  body += 'Haftalık planlar MEB 2025-2026 iş takvimi baz alınarak otomatik oluşturulur. Her haftaya deney/konu ataması yapabilirsiniz.';
-  body += '</div>';
-
-  var overlay = document.createElement('div'); overlay.className='overlay'; overlay.id='yplan-overlay';
-  overlay.onclick = function(e){ if(e.target===overlay) kapat('yplan-overlay'); };
-  var modal = document.createElement('div'); modal.className='modal'; modal.style.maxWidth='500px';
-  modal.innerHTML = '<div class="modal-hd"><h3>📅 Yeni Yıllık Plan</h3><button class="modal-close" onclick="kapat(\'yplan-overlay\')">&#x2715;</button></div>'+
-    '<div class="modal-body">'+body+'</div>'+
-    '<div class="modal-ft"><button class="btn-secondary" onclick="kapat(\'yplan-overlay\')">İptal</button>'+
-    '<button class="btn-primary" onclick="kaydetYeniPlan()">📅 Plan Oluştur</button></div>';
-  overlay.appendChild(modal);
-  document.body.appendChild(overlay);
-}
-
-function yeniPlanDersGuncelle() {
-  var sinifKey = document.getElementById('yp-sinif').value;
-  var dersEl = document.getElementById('yp-ders');
-  dersEl.innerHTML = '<option value="">— Ders Seç —</option>';
-  if (!sinifKey) return;
-  var dersler = getSinifTumDersler(sinifKey);
-  dersler.forEach(function(d) {
-    dersEl.innerHTML += '<option value="'+d.ad+'|'+d.saat+'">'+d.ad+' ('+d.saat+'s/hafta)</option>';
-  });
-}
-
-function yeniPlanDeneyGuncelle() {
-  var val = document.getElementById('yp-ders').value;
-  var saatEl = document.getElementById('yp-saat');
-  var haftaEl = document.getElementById('yp-hafta');
-  var ozet = document.getElementById('yp-deney-ozet');
-  if (!val) { ozet.style.display='none'; return; }
-  var parca = val.split('|');
-  var dersAd = parca[0]; var saat = parseInt(parca[1])||0;
-  saatEl.value = saat;
-
-  var topHafta = 0;
-  Object.values(MEB_TAKVIM).forEach(function(ay){ topHafta += ay.hafta; });
-  haftaEl.value = Math.round(topHafta);
-
-  // Bağlantılı deneyler
-  var ilgiliDeneyler = DENEY_LISTESI.filter(function(d){ return d.ad && (d.unite||'').indexOf(dersAd)>=0 || (d.dersLabel||'').indexOf(dersAd)>=0; });
-  ozet.style.display = 'block';
-  ozet.innerHTML = 'İş takviminden <strong>'+Math.round(topHafta)+' öğretim haftası</strong> oluşturulacak. '+
-    (ilgiliDeneyler.length ? '<br>Bağlantılı deney: <strong>'+ilgiliDeneyler.length+'</strong> adet (Deney Yönetimi sekmesinden alınır).' : '<br>Konular manuel girilebilir.');
-}
-
-function kaydetYeniPlan() {
-  var sinifKey = document.getElementById('yp-sinif').value;
-  var dersVal  = document.getElementById('yp-ders').value;
-  var ogretmen = document.getElementById('yp-ogretmen').value;
-  if (!sinifKey || !dersVal) { alert('Sınıf ve ders zorunludur!'); return; }
-
-  var parca = dersVal.split('|');
-  var dersAd = parca[0]; var saat = parseInt(parca[1])||0;
-
-  // MEB takviminden haftalık liste oluştur
-  var mebHaftalar = getMebHaftalar();
-  // Bağlantılı deneyler
-  var ilgiliDeneyler = DENEY_LISTESI.filter(function(d){
-    return (d.unite||'').indexOf(dersAd)>=0 || (d.dersLabel||'').indexOf(dersAd)>=0 || (d.ad||'').length>0;
-  });
-
-  var haftalar = mebHaftalar.map(function(h, i) {
-    var deney = ilgiliDeneyler[i % (ilgiliDeneyler.length||1)];
-    return {
-      haftaNo:  i+1,
-      ayKey:    h.ayKey,
-      ayAd:     h.ayAd,
-      pazartesi: h.pazartesi,
-      konu:     deney ? deney.ad : '',
-      tamamlandi: false
-    };
-  });
-
-  var plan = {
-    sinifKey:    sinifKey,
-    dersAd:      dersAd,
-    ogretmen:    ogretmen,
-    haftaBasina: saat,
-    yil:         '2025-2026',
-    olusturmaTarihi: new Date().toISOString().split('T')[0],
-    haftalar:    haftalar
-  };
-
-  var planlar = lsGetYillikPlanlar();
-  planlar.push(plan);
-  lsSetYillikPlanlar(planlar);
-  kapat('yplan-overlay');
-  state.view = 'yillikplan';
-  renderYillikPlanlar();
-}
-
-
-
-// ===== DOSYA YÜKLEME VE AYRIŞTIRMA =====
-var yuklenenSatirlar = [];   // ayrıştırılan satırlar [{cols:[...]}]
-var kolonEslestirme  = {};   // {hafta:'A', tarih:'B', konu:'C', kazanim:'D'}
-
-function loadScript(url, cb) {
-  var s = document.createElement('script');
-  s.src = url; s.onload = cb;
-  s.onerror = function(){ console.warn('CDN yüklenemedi:', url); cb(); };
-  document.head.appendChild(s);
-}
-
-function openDosyaYukleModal() {
-  var sinifOpts = '<option value="">— Sınıf Seç —</option>';
-  KIMYA_SINIFLAR.forEach(function(s2) {
-    sinifOpts += '<option value="'+getSinifKey(s2)+'">'+getSinifEtiket(s2)+'</option>';
-  });
-  var ogrOpts = '<option value="">— Öğretmen —</option>';
-  lsGetPersonel().forEach(function(p){ ogrOpts += '<option value="'+p.ad+'">'+p.ad+'</option>'; });
-  var dersOpts = '';
-  [9,10,11,12].forEach(function(sno){
-    var g = KIMYA_DERSLER[sno]; if(!g) return;
-    (g.zorunlu||[]).concat(g.secmeli||[]).forEach(function(d){
-      dersOpts += '<option value="'+d.ad+'">'+sno+'. Sınıf — '+d.ad+'</option>';
-    });
-  });
-  yuklenenSatirlar = []; kolonEslestirme = {};
-
-  var overlay = document.createElement('div');
-  overlay.className = 'overlay'; overlay.id = 'dosya-overlay';
-  overlay.onclick = function(e){ if(e.target===overlay) kapat('dosya-overlay'); };
-
-  var modal = document.createElement('div');
-  modal.className = 'modal'; modal.style.maxWidth = '640px';
-
-  var hd = '<div class="modal-hd"><h3>Yıllık Plan Yükle</h3>'+
-    '<button class="modal-close" id="dosya-kapat-btn">&#x2715;</button></div>';
-
-  var body = '<div class="modal-body">';
-  body += '<div class="form-grid" style="margin-bottom:10px">';
-  body += '<div class="form-row"><label class="form-lbl">Sınıf</label><select class="form-select" id="dy-sinif">'+sinifOpts+'</select></div>';
-  body += '<div class="form-row"><label class="form-lbl">Ders</label><select class="form-select" id="dy-ders"><option value="">— Seç —</option>'+dersOpts+'</select></div>';
-  body += '<div class="form-row"><label class="form-lbl">Öğretmen</label><select class="form-select" id="dy-ogr">'+ogrOpts+'</select></div>';
-  body += '<div class="form-row"><label class="form-lbl">Saat/hafta</label><input class="form-input" type="number" id="dy-saat" value="7" min="1" max="12"></div>';
-  body += '</div>';
-  body += '<div class="upload-drop-zone" id="drop-zone">';
-  body += '<input type="file" id="dosya-input" accept=".xlsx,.xls,.docx,.doc,.pdf,.txt,.csv">';
-  body += '<div style="font-size:28px;margin-bottom:8px">&#x1f4c2;</div>';
-  body += '<div style="font-size:13px;font-weight:700;color:#6d28d9">Excel, Word, PDF veya CSV sürükle-bırak</div>';
-  body += '<div style="font-size:11px;color:#a78bfa;margin-top:4px">.xlsx .xls .docx .pdf .csv .txt desteklenir</div>';
-  body += '<button type="button" id="dosya-sec-btn" class="add-btn" style="margin-top:10px;background:linear-gradient(135deg,#3b82f6,#1d4ed8)">Dosya Seç</button>';
-  body += '</div>';
-  body += '<div id="yukleme-durum" style="margin-top:8px;font-size:11px;color:#7c3aed;min-height:20px"></div>';
-  body += '<div id="kolon-esles" style="display:none;margin-top:10px"></div>';
-  body += '<div id="onizleme-alan" style="display:none;margin-top:10px;max-height:200px;overflow-y:auto"></div>';
-  body += '</div>';
-
-  var ft = '<div class="modal-ft" id="dosya-ft" style="display:none">' +
-    '<button class="btn-secondary" id="dosya-iptal-btn">İptal</button>' +
-    '<button class="btn-primary" id="dosya-aktar-btn">Planı Aktar</button></div>';
-
-  modal.innerHTML = hd + body + ft;
-  overlay.appendChild(modal);
-  document.body.appendChild(overlay);
-
-  // Event listeners (tırnak sorunusuz)
-  document.getElementById('dosya-kapat-btn').onclick = function(){ kapat('dosya-overlay'); };
-  document.getElementById('dosya-iptal-btn').onclick = function(){ kapat('dosya-overlay'); };
-  document.getElementById('dosya-aktar-btn').onclick = dosyaPlanIceri;
-  document.getElementById('dosya-sec-btn').onclick = function(){ document.getElementById('dosya-input').click(); };
-  document.getElementById('dosya-input').onchange = function(){ if(this.files[0]) isleDosya(this.files[0]); };
-  var dz = document.getElementById('drop-zone');
-  dz.ondragover = function(e){ e.preventDefault(); dz.classList.add('drag-over'); };
-  dz.ondragleave = function(){ dz.classList.remove('drag-over'); };
-  dz.ondrop = handleFileDrop;
-}
-
-function handleFileDrop(e) {
-  e.preventDefault();
-  document.getElementById('drop-zone').classList.remove('drag-over');
-  var f = e.dataTransfer.files[0];
-  if (f) isleDosya(f);
-}
-function handleFileSelect(inp) {
-  if (inp.files[0]) isleDosya(inp.files[0]);
-}
-
-function isleDosya(file) {
+function yplanDosyaYukle(event, sinif, dersAd) {
+  var file = event.target.files[0];
+  if (!file) return;
   var ext = file.name.split('.').pop().toLowerCase();
-  document.getElementById('yukleme-durum').innerHTML = '&#x23f3; Yükleniyor: <strong>'+file.name+'</strong>';
-  if (ext==='xlsx' || ext==='xls') {
-    okuyExcel(file);
-  } else if (ext==='csv') {
-    okuyMetin(file, 'csv');
-  } else if (ext==='txt') {
-    okuyMetin(file, 'txt');
-  } else if (ext==='docx') {
-    okuyDocx(file);
-  } else if (ext==='pdf') {
-    okuyPdf(file);
-  } else {
-    document.getElementById('yukleme-durum').innerHTML = '&#x26a0;&#xfe0f; Desteklenmeyen format. Excel, CSV veya Word kullanın.';
-  }
-}
-
-function okuyExcel(file) {
-  loadScript('https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js', function(){
-    if (typeof XLSX === 'undefined') {
-      document.getElementById('yukleme-durum').innerHTML = '&#x26a0;&#xfe0f; SheetJS yüklenemedi. İnternet bağlantısı gerekli veya CSV olarak kaydedin.';
-      return;
-    }
-    var reader = new FileReader();
-    reader.onload = function(e) {
-      try {
-        var wb = XLSX.read(e.target.result, {type:'binary'});
-        var ws = wb.Sheets[wb.SheetNames[0]];
-        var rows = XLSX.utils.sheet_to_json(ws, {header:1, defval:''});
-        yuklenenSatirlar = rows.filter(function(r){ return r.some(function(x){return String(x).trim()!=='';});});
-        gosterOnizleme('Excel');
-      } catch(err) {
-        document.getElementById('yukleme-durum').innerHTML = '&#x274c; Excel okuma hatası: '+err.message;
-      }
-    };
-    reader.readAsBinaryString(file);
-  });
-}
-
-function okuyMetin(file, tip) {
+  var tur = ext === 'pdf' ? 'pdf' : (ext === 'doc' || ext === 'docx') ? 'word' : 'excel';
+  if (file.size > 25 * 1024 * 1024) { toast('Dosya 25 MB\'dan büyük, yüklenemez'); return; }
+  toast('Yükleniyor...');
   var reader = new FileReader();
   reader.onload = function(e) {
-    var text = e.target.result;
-    var satırlar = text.split(/\r?\n/).filter(function(l){return l.trim();});
-    var ayirici = tip==='csv' ? /[,;\t]/ : /\t/;
-    yuklenenSatirlar = satırlar.map(function(l){ return l.split(ayirici).map(function(c){return c.replace(/^["']|["']$/g,'').trim();}); });
-    gosterOnizleme(tip.toUpperCase());
+    var dosyalar = lsGetYplanDosyalar();
+    dosyalar.push({
+      id: String(Date.now()),
+      sinif: sinif,
+      dersAd: dersAd,
+      dosyaAd: file.name,
+      ext: ext,
+      dosyaTur: tur,
+      dosyaVeri: e.target.result,
+      tarih: new Date().toLocaleDateString('tr-TR')
+    });
+    lsSetYplanDosyalar(dosyalar);
+    toast(file.name + ' yüklendi');
+    renderYillikPlanlar();
   };
-  reader.readAsText(file, 'UTF-8');
+  reader.readAsDataURL(file);
 }
 
-function okuyDocx(file) {
-  // .docx = ZIP, XML tablolarını basitçe çıkar
-  loadScript('https://stuk.github.io/jszip/dist/jszip.min.js', function(){
-    var reader = new FileReader();
-    reader.onload = function(e) {
-      try {
-        var ab = e.target.result;
-        if (typeof JSZip !== 'undefined') {
-          JSZip.loadAsync(ab).then(function(zip) {
-            return zip.file('word/document.xml').async('text');
-          }).then(function(xml) {
-            // Tablo satırlarını çıkar
-            var rows = [];
-            var trMatches = xml.match(/<w:tr[ >][\s\S]*?<\/w:tr>/g) || [];
-            trMatches.forEach(function(tr) {
-              var cells = [];
-              var tcMatches = tr.match(/<w:tc[ >][\s\S]*?<\/w:tc>/g) || [];
-              tcMatches.forEach(function(tc) {
-                var text = tc.replace(/<[^>]+>/g,' ').replace(/\s+/g,' ').trim();
-                cells.push(text);
-              });
-              if (cells.some(function(x){return x.trim();})) rows.push(cells);
-            });
-            if (rows.length) {
-              yuklenenSatirlar = rows;
-              gosterOnizleme('Word');
-            } else {
-              // Paragraf bazlı çıkarım
-              var paras = xml.match(/<w:p[ >][\s\S]*?<\/w:p>/g) || [];
-              var lines = paras.map(function(p){ return [p.replace(/<[^>]+>/g,'').replace(/\s+/g,' ').trim()]; }).filter(function(r){return r[0];});
-              yuklenenSatirlar = lines;
-              gosterOnizleme('Word (paragraf)');
-            }
-          });
-        } else {
-          // JSZip yoksa metin olarak dene
-          document.getElementById('yukleme-durum').innerHTML = '&#x26a0;&#xfe0f; Word için internet bağlantısı gerekli. Dosyayı Excel/CSV formatında kaydedin.';
-        }
-      } catch(err) {
-        document.getElementById('yukleme-durum').innerHTML = '&#x274c; Word okuma hatası.';
-      }
-    };
-    reader.readAsArrayBuffer(file);
-  });
-}
-
-function okuyPdf(file) {
-  loadScript('https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js', function(){
-    if (typeof pdfjsLib === 'undefined') {
-      document.getElementById('yukleme-durum').innerHTML = '&#x26a0;&#xfe0f; PDF okumak için internet bağlantısı gerekli. PDF dosyasını Excel veya CSV formatına çevirin ya da içeriği yapıştırın.';
-      ekleYapistirAlani();
-      return;
-    }
-    pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
-    var reader = new FileReader();
-    reader.onload = function(e) {
-      pdfjsLib.getDocument({data: e.target.result}).promise.then(function(pdf) {
-        var metin = '';
-        var promises = [];
-        for (var i=1; i<=pdf.numPages; i++) {
-          promises.push(pdf.getPage(i).then(function(page){
-            return page.getTextContent().then(function(tc){
-              return tc.items.map(function(item){return item.str;}).join(' ');
-            });
-          }));
-        }
-        Promise.all(promises).then(function(pages) {
-          metin = pages.join('\n');
-          var satırlar = metin.split(/\n/).filter(function(l){return l.trim();});
-          yuklenenSatirlar = satırlar.map(function(l){ return [l.trim()]; });
-          gosterOnizleme('PDF');
-        });
-      });
-    };
-    reader.readAsArrayBuffer(file);
-  });
-}
-
-function ekleYapistirAlani() {
-  var div = document.getElementById('yukleme-durum');
-  var extra = document.createElement('div');
-  extra.style.marginTop = '6px';
-  var lbl = document.createElement('label');
-  lbl.style.cssText = 'font-size:11px;font-weight:700;color:#7c3aed';
-  lbl.textContent = 'PDF içeriğini buraya yapıştırın:';
-  extra.appendChild(lbl);
-  var ta = document.createElement('textarea');
-  ta.id = 'yapistir-alan'; ta.rows = 6; ta.className = 'form-input';
-  ta.style.cssText = 'width:100%;margin-top:4px;font-family:monospace;font-size:11px';
-  ta.placeholder = 'Buraya yapistirin...';
-  extra.appendChild(ta);
-  var btn2 = document.createElement('button');
-  btn2.className = 'btn-primary'; btn2.style.cssText = 'margin-top:4px;width:100%';
-  btn2.textContent = 'İşle';
-  btn2.onclick = yapistirIceriIsle;
-  extra.appendChild(btn2);
-  div.appendChild(extra);
-}
-
-function yapistirIceriIsle() {
-  var text = document.getElementById('yapistir-alan').value;
-  var satırlar = text.split(/\n/).filter(function(l){return l.trim();});
-  yuklenenSatirlar = satırlar.map(function(l){ return l.split(/\t|;/).map(function(c){return c.trim();}); });
-  gosterOnizleme('Yapıştır');
-}
-
-function gosterOnizleme(tip) {
-  if (!yuklenenSatirlar.length) {
-    document.getElementById('yukleme-durum').innerHTML = '&#x26a0;&#xfe0f; Veri bulunamadı.';
-    return;
+function yplanDosyaAc(id) {
+  var dosyalar = lsGetYplanDosyalar();
+  var dosya = null;
+  for (var i = 0; i < dosyalar.length; i++) { if (dosyalar[i].id === id) { dosya = dosyalar[i]; break; } }
+  if (!dosya || !dosya.dosyaVeri) return;
+  var mimeMap = {
+    pdf: 'application/pdf',
+    docx: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+    doc: 'application/msword',
+    xlsx: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+    xls: 'application/vnd.ms-excel'
+  };
+  var ext = dosya.ext || dosya.dosyaAd.split('.').pop().toLowerCase();
+  var mime = mimeMap[ext] || 'application/octet-stream';
+  var b64 = dosya.dosyaVeri.indexOf(',') >= 0 ? dosya.dosyaVeri.split(',')[1] : dosya.dosyaVeri;
+  var byteStr = atob(b64);
+  var ab = new ArrayBuffer(byteStr.length);
+  var ia = new Uint8Array(ab);
+  for (var j = 0; j < byteStr.length; j++) ia[j] = byteStr.charCodeAt(j);
+  var blob = new Blob([ab], {type: mime});
+  var url = URL.createObjectURL(blob);
+  if (dosya.dosyaTur === 'pdf') {
+    window.open(url, '_blank');
+  } else {
+    var a = document.createElement('a');
+    a.href = url;
+    a.download = dosya.dosyaAd;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    setTimeout(function(){ URL.revokeObjectURL(url); }, 2000);
   }
-  document.getElementById('yukleme-durum').innerHTML = '&#x2705; <strong>'+tip+'</strong> okundu — '+yuklenenSatirlar.length+' satır, '+(yuklenenSatirlar[0]||[]).length+' sütun';
-
-  // Kolon eşleştirme
-  var ilkSatir = yuklenenSatirlar[0] || [];
-  var kolonDiv = document.getElementById('kolon-esles');
-  kolonDiv.style.display = 'block';
-  kolonDiv.innerHTML = '<div style="font-size:12px;font-weight:700;color:#3b0764;margin-bottom:6px">Sütun Eşleştirme <span style="font-size:10px;color:#9ca3af;font-weight:400">(başlık satırı varsa otomatik tanınır)</span></div>';
-
-  var alanlar = ['hafta','tarih','konu','kazanim','aciklama'];
-  var alanAdlar = ['Hafta No','Tarih','Konu / Deney','Kazanım','Açıklama'];
-  var otomatik = otomatikKolonTanı(ilkSatir);
-
-  alanlar.forEach(function(alan, ai) {
-    kolonDiv.innerHTML += '<div class="col-map-row"><span class="col-map-lbl">'+alanAdlar[ai]+'</span>';
-    kolonDiv.innerHTML += '<select class="fsel" id="km-'+alan+'" style="font-size:11px"><option value="">— Yok —</option>';
-    ilkSatir.forEach(function(bas, ci) {
-      var sel = otomatik[alan]===ci ? ' selected' : '';
-      kolonDiv.innerHTML += '<option value="'+ci+'"'+sel+'>'+(bas||'Sütun '+(ci+1))+'</option>';
-    });
-    kolonDiv.innerHTML += '<option value="auto_'+ai+'"'+(otomatik[alan]===undefined?' selected':'')+'>Otomatik</option>';
-    kolonDiv.innerHTML += '</select></div>';
-  });
-
-  // Önizleme tablosu
-  var onizDiv = document.getElementById('onizleme-alan');
-  onizDiv.style.display = 'block';
-  onizDiv.innerHTML = '<div style="font-size:11px;font-weight:700;color:#7c3aed;margin-bottom:4px">Önizleme (ilk 5 satır):</div>';
-  onizDiv.innerHTML += '<table class="prev-tablo"><thead><tr>'+ilkSatir.map(function(b,i){return '<th>'+(b||'Sütun '+(i+1))+'</th>';}).join('')+'</tr></thead><tbody>';
-  var gosterSatirlar = yuklenenSatirlar.slice(1,6);
-  gosterSatirlar.forEach(function(r){ onizDiv.innerHTML += '<tr>'+r.map(function(c){return '<td>'+String(c).substring(0,40)+'</td>';}).join('')+'</tr>'; });
-  onizDiv.innerHTML += '</tbody></table>';
-
-  document.getElementById('dosya-ft').style.display = 'flex';
 }
 
-function otomatikKolonTanı(ilkSatir) {
-  var eslestir = {};
-  var anahtar = {
-    hafta: /hafta|week|no|s[ı\.]/i,
-    tarih: /tarih|date|gün|gun/i,
-    konu: /konu|topic|ders|i\.birim|öğrenme|ogrenme/i,
-    kazanim: /kazanım|kazanim|hedef|amaç|amac/i,
-    aciklama: /açıklama|aciklama|not|activity|etkinlik/i
-  };
-  ilkSatir.forEach(function(bas, ci) {
-    var s = String(bas||'');
-    Object.keys(anahtar).forEach(function(alan){
-      if (eslestir[alan]===undefined && anahtar[alan].test(s)) eslestir[alan] = ci;
-    });
-  });
-  return eslestir;
-}
-
-function dosyaPlanIceri() {
-  var sinifKey = document.getElementById('dy-sinif').value;
-  var dersAd   = document.getElementById('dy-ders').value;
-  var ogretmen = document.getElementById('dy-ogr').value;
-  var saat     = parseInt(document.getElementById('dy-saat').value)||7;
-  if (!sinifKey || !dersAd) { alert('Sınıf ve ders zorunludur!'); return; }
-
-  // Kolon eşleştirme oku
-  var km = {};
-  ['hafta','tarih','konu','kazanim','aciklama'].forEach(function(alan){
-    var el = document.getElementById('km-'+alan);
-    if (el && el.value !== '' && !el.value.startsWith('auto_')) km[alan] = parseInt(el.value);
-  });
-
-  // MEB takviminden haftalara eşleştir
-  var mebHaftalar = getMebHaftalar();
-  var veriSatirlari = (yuklenenSatirlar[0] && yuklenenSatirlar[0].some(function(x){
-    return /hafta|week|konu|tarih/i.test(String(x));
-  })) ? yuklenenSatirlar.slice(1) : yuklenenSatirlar;
-
-  var haftalar = mebHaftalar.map(function(mh, i) {
-    var satir = veriSatirlari[i] || [];
-    var konu = km.konu !== undefined ? String(satir[km.konu]||'') :
-               (km.tarih !== undefined ? String(satir[km.kazanim]||'') : String(satir[0]||''));
-    var kazanim = km.kazanim !== undefined ? String(satir[km.kazanim]||'') : '';
-    var aciklama = km.aciklama !== undefined ? String(satir[km.aciklama]||'') : '';
-    return {
-      haftaNo:   i+1,
-      ayKey:     mh.ayKey,
-      ayAd:      mh.ayAd,
-      pazartesi: mh.pazartesi,
-      konu:      konu.trim(),
-      kazanim:   kazanim.trim(),
-      aciklama:  aciklama.trim(),
-      tamamlandi: false
-    };
-  });
-
-  var plan = {
-    sinifKey:        sinifKey,
-    dersAd:          dersAd,
-    ogretmen:        ogretmen,
-    haftaBasina:     saat,
-    yil:             '2025-2026',
-    olusturmaTarihi: new Date().toISOString().split('T')[0],
-    kaynakDosya:     'Dosya yükleme',
-    haftalar:        haftalar
-  };
-
-  var planlar = lsGetYillikPlanlar();
-  planlar.push(plan);
-  lsSetYillikPlanlar(planlar);
-  kapat('dosya-overlay');
-  state.view = 'yillikplan';
+function yplanDosyaSil(id) {
+  if (!confirm('Bu dosya silinsin mi?')) return;
+  lsSetYplanDosyalar(lsGetYplanDosyalar().filter(function(d){ return d.id !== id; }));
+  toast('Dosya silindi');
   renderYillikPlanlar();
 }
+
 
 
 // ===== PROGRAM BUTUNLESME BAGLANTILARI =====
