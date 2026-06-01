@@ -7,7 +7,7 @@
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
 body{font-family:'Segoe UI',system-ui,sans-serif;background:linear-gradient(135deg,#f0f4ff 0%,#fdf4ff 50%,#f0fffe 100%);color:#1e1b4b;min-height:100vh}
-:root{--sidebar-w:260px;--ai-w:340px}
+:root{--sidebar-w:260px}
 .app{display:flex;height:100vh;overflow:hidden}
 .sidebar{width:var(--sidebar-w);background:linear-gradient(180deg,#72727e 0%,#65656f 60%,#5e5e68 100%);border-right:1px solid #7e7e8a;display:flex;flex-direction:column;overflow:hidden;flex-shrink:0}
 .sidebar-header{padding:20px 16px 12px;border-bottom:1px solid #7e7e8a;background:linear-gradient(135deg,#6a6a75,#5e5e68)}
@@ -34,8 +34,6 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:linear-gradient(135d
 .search-icon{position:absolute;left:9px;top:50%;transform:translateY(-50%);color:#a78bfa;font-size:14px;pointer-events:none}
 .add-btn{background:linear-gradient(135deg,#10b981,#059669);color:#fff;border:none;border-radius:8px;padding:7px 13px;font-size:12px;font-weight:600;cursor:pointer;white-space:nowrap;flex-shrink:0;box-shadow:0 2px 8px rgba(16,185,129,0.3)}
 .add-btn:hover{background:linear-gradient(135deg,#059669,#047857);box-shadow:0 4px 12px rgba(16,185,129,0.4)}
-.ai-open-btn{background:linear-gradient(135deg,#8b5cf6,#6d28d9);color:#fff;border:none;border-radius:8px;padding:7px 12px;font-size:12px;font-weight:600;cursor:pointer;white-space:nowrap;flex-shrink:0;display:flex;align-items:center;gap:5px;box-shadow:0 2px 8px rgba(139,92,246,0.35)}
-.ai-open-btn:hover{background:linear-gradient(135deg,#7c3aed,#5b21b6);box-shadow:0 4px 12px rgba(139,92,246,0.45)}
 .content{flex:1;overflow-y:auto;padding:20px}
 .content::-webkit-scrollbar{width:6px}
 .content::-webkit-scrollbar-thumb{background:#c4b5fd;border-radius:3px}
@@ -109,63 +107,6 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:linear-gradient(135d
 .btn-danger{background:#fee2e2;color:#dc2626;border:1px solid #fecaca;border-radius:8px;padding:8px 14px;font-size:13px;cursor:pointer;margin-right:auto;font-weight:500}
 .btn-danger:hover{background:#fecaca}
 
-/* AI PANEL */
-.ai-panel{width:var(--ai-w);background:linear-gradient(180deg,#fdf4ff 0%,#fff 40%);border-left:1px solid #e9d5ff;display:flex;flex-direction:column;flex-shrink:0;transition:width 0.25s,border 0.25s;overflow:hidden}
-.ai-panel.hidden{width:0;border-left:none}
-.ai-hd{padding:12px 14px 10px;border-bottom:1px solid #f3e8ff;display:flex;align-items:center;gap:7px;flex-shrink:0;background:linear-gradient(90deg,#fdf4ff,#eff6ff)}
-.ai-hd h3{font-size:13px;font-weight:700;color:#3b0764;flex:1}
-.ai-badge{background:linear-gradient(135deg,#c4b5fd,#a78bfa);color:#fff;font-size:9px;padding:2px 7px;border-radius:10px;font-weight:700}
-.ai-close{background:none;border:none;color:#a78bfa;cursor:pointer;font-size:15px;padding:2px 5px;border-radius:5px}
-.ai-close:hover{background:#ede9fe;color:#6d28d9}
-.upload-area{margin:10px 12px 4px;border:2px dashed #c4b5fd;border-radius:12px;padding:10px;text-align:center;background:linear-gradient(135deg,#faf5ff,#eff6ff)}
-.upload-area:hover{background:linear-gradient(135deg,#ede9fe,#dbeafe);border-color:#8b5cf6}
-.upload-area input{display:none}
-.upload-area .uicon{font-size:24px}
-.upload-area p{font-size:12px;color:#7c3aed;font-weight:600;margin-top:2px}
-.upload-area small{font-size:10px;color:#a78bfa}
-.cam-wrap{margin:0 12px 4px;display:none;border-radius:10px;overflow:hidden;background:#1e1b4b;border:2px solid #ddd6fe}
-.cam-video{width:100%;display:block;max-height:160px;object-fit:cover}
-.cam-actions{display:none;margin:0 12px 4px;gap:6px}
-.cam-capture{flex:1;background:linear-gradient(135deg,#f43f5e,#e11d48);color:#fff;border:none;border-radius:8px;padding:7px;font-size:12px;font-weight:600;cursor:pointer;box-shadow:0 2px 8px rgba(225,29,72,0.3)}
-.cam-capture:hover{background:linear-gradient(135deg,#e11d48,#be123c)}
-.cam-stop{background:#ede9fe;color:#6d28d9;border:1px solid #ddd6fe;border-radius:8px;padding:7px 11px;font-size:12px;cursor:pointer;font-weight:500}
-.preview-wrap{padding:0 12px;display:none}
-.preview-img{width:100%;border-radius:9px;margin-top:6px;max-height:110px;object-fit:cover;border:2px solid #e9d5ff;box-shadow:0 2px 8px rgba(139,92,246,0.15)}
-.analyze-btn{width:100%;margin-top:6px;background:linear-gradient(135deg,#8b5cf6,#6d28d9);color:#fff;border:none;border-radius:8px;padding:7px;font-size:12px;font-weight:600;cursor:pointer;box-shadow:0 2px 8px rgba(109,40,217,0.3)}
-.analyze-btn:hover{background:linear-gradient(135deg,#7c3aed,#5b21b6)}
-.analyze-btn:disabled{background:#c4b5fd;cursor:not-allowed;box-shadow:none}
-.scan-box{background:linear-gradient(135deg,#f0fdf4,#dcfce7);border:1px solid #86efac;border-radius:10px;padding:9px 11px;margin:6px 12px;font-size:11.5px}
-.scan-box h4{color:#15803d;font-size:11.5px;font-weight:700;margin-bottom:5px}
-.scan-row{display:flex;gap:5px;margin-bottom:2px}
-.scan-k{color:#6b7280;min-width:75px;font-size:11px}
-.scan-v{color:#14532d;font-weight:600;font-size:11px}
-.scan-acts{display:flex;gap:6px;margin-top:7px}
-.scan-use{flex:1;background:linear-gradient(135deg,#10b981,#059669);color:#fff;border:none;border-radius:7px;padding:5px;font-size:11px;cursor:pointer;font-weight:600}
-.scan-use:hover{background:linear-gradient(135deg,#059669,#047857)}
-.scan-disc{background:#ede9fe;color:#6d28d9;border:none;border-radius:7px;padding:5px 9px;font-size:11px;cursor:pointer;font-weight:500}
-.qas{padding:6px 12px;display:flex;gap:5px;flex-wrap:wrap}
-.qa{background:linear-gradient(135deg,#faf5ff,#eff6ff);border:1px solid #ddd6fe;border-radius:8px;padding:4px 8px;font-size:11px;color:#6d28d9;cursor:pointer;font-weight:500}
-.qa:hover{background:linear-gradient(135deg,#ede9fe,#dbeafe);border-color:#a78bfa;color:#4c1d95}
-.msgs{flex:1;overflow-y:auto;padding:10px 12px;display:flex;flex-direction:column;gap:8px}
-.msgs::-webkit-scrollbar{width:4px}
-.msgs::-webkit-scrollbar-thumb{background:#ddd6fe;border-radius:2px}
-.msg{max-width:92%;padding:8px 11px;border-radius:12px;font-size:12.5px;line-height:1.5;word-break:break-word;white-space:pre-wrap}
-.msg.user{align-self:flex-end;background:linear-gradient(135deg,#8b5cf6,#6d28d9);color:#fff;border-radius:12px 12px 2px 12px;box-shadow:0 2px 8px rgba(109,40,217,0.25)}
-.msg.ai{align-self:flex-start;background:linear-gradient(135deg,#faf5ff,#f0f9ff);color:#2e1065;border:1px solid #ddd6fe;border-radius:12px 12px 12px 2px}
-.msg.sys{align-self:center;background:linear-gradient(135deg,#fef9c3,#fef3c7);color:#92400e;border:1px solid #fde68a;border-radius:8px;font-size:11px;text-align:center;padding:5px 10px;max-width:100%;font-weight:500}
-.msg-img{width:100%;border-radius:7px;margin-bottom:5px}
-.typing{align-self:flex-start;background:#faf5ff;border:1px solid #ddd6fe;border-radius:12px;padding:9px 13px;display:flex;gap:4px;align-items:center}
-.typing span{width:5px;height:5px;background:#c4b5fd;border-radius:50%;animation:blink 1.2s infinite}
-.typing span:nth-child(2){animation-delay:.2s}
-.typing span:nth-child(3){animation-delay:.4s}
-@keyframes blink{0%,80%,100%{opacity:0.3}40%{opacity:1}}
-.chat-in{padding:9px 11px;border-top:1px solid #f3e8ff;flex-shrink:0;background:#fdf4ff}
-.chat-row{display:flex;gap:6px;align-items:flex-end}
-.chat-ta{flex:1;border:1px solid #ddd6fe;border-radius:9px;padding:7px 10px;font-size:12.5px;resize:none;outline:none;font-family:inherit;min-height:36px;max-height:90px;background:#faf5ff;line-height:1.4;color:#2e1065}
-.chat-ta:focus{border-color:#8b5cf6;background:#fff;box-shadow:0 0 0 3px #ede9fe}
-.send-btn{background:linear-gradient(135deg,#8b5cf6,#6d28d9);color:#fff;border:none;border-radius:9px;width:34px;height:34px;cursor:pointer;font-size:15px;display:flex;align-items:center;justify-content:center;flex-shrink:0;box-shadow:0 2px 8px rgba(109,40,217,0.3)}
-.send-btn:hover{background:linear-gradient(135deg,#7c3aed,#5b21b6)}
-.send-btn:disabled{background:#c4b5fd;cursor:not-allowed;box-shadow:none}
 .toast{position:fixed;bottom:22px;right:22px;background:linear-gradient(135deg,#6d28d9,#4c1d95);color:#fff;padding:9px 16px;border-radius:10px;font-size:12px;z-index:300;pointer-events:none;animation:tin .2s ease;box-shadow:0 4px 16px rgba(109,40,217,0.4);font-weight:500}
 @keyframes tin{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
 .lab-template{padding:0}
@@ -356,6 +297,7 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:linear-gradient(135d
   .rapor-body { padding:20px; }
   body > .app { display:none!important; }
 }
+</style>
 
 <style>
 .upload-drop-zone{border:2px dashed #c4b5fd;border-radius:14px;padding:28px;text-align:center;background:linear-gradient(135deg,#faf5ff,#eff6ff);cursor:pointer;transition:all .2s}
@@ -392,7 +334,6 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:linear-gradient(135d
   .sidebar-overlay.open{display:block}
   .haftalik-grid{min-width:440px;grid-template-columns:56px repeat(5,minmax(72px,1fr))!important}
   .search-wrap input{width:120px}
-  .ai-open-btn{font-size:11px;padding:5px 8px}
 }
 </style>
 </head>
@@ -416,10 +357,9 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:linear-gradient(135d
       <h2 id="topbar-title">Laboratuvar Programı</h2>
       <div class="search-wrap">
         <span class="search-icon">🔍</span>
-        <input type="text" id="search-box" placeholder="Ara..." oninput="onSearch(this.value)">
+        <input type="text" id="search-box" placeholder="Kimyasal Ara..." oninput="onSearch(this.value)">
       </div>
       <button class="add-btn" id="add-btn" onclick="openAddModal()" style="display:none">+ Madde Ekle</button>
-      <button class="ai-open-btn" onclick="toggleAI()">🤖 Claude AI</button>
       <div class="tb-kullanici" id="tb-kullanici" style="display:none">
         <span class="tb-kullanici-ad" id="tb-kullanici-ad">👤</span>
         <button class="tb-log-btn" id="tb-log-btn" onclick="auditLogGoster()" style="display:none">📋 Kayıtlar</button>
@@ -428,67 +368,6 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:linear-gradient(135d
       </div>
     </div>
     <div class="content" id="main-content"></div>
-  </div>
-
-  <!-- AI PANEL -->
-  <div class="ai-panel hidden" id="ai-panel">
-    <div class="ai-hd">
-      <span style="font-size:17px">🤖</span>
-      <h3>Claude Asistan</h3>
-      <span class="ai-badge">AI</span>
-      <button class="ai-close" onclick="toggleAI()">✕</button>
-    </div>
-
-    <div class="upload-area" style="cursor:default">
-      <input type="file" id="lbl-file" accept="image/*" onchange="onLabelPick(event)" style="display:none">
-      <div style="display:flex;gap:16px;justify-content:center">
-        <div onclick="document.getElementById('lbl-file').click()" style="cursor:pointer;text-align:center">
-          <div class="uicon">🗂️</div>
-          <p style="margin-top:2px">Dosya Seç</p>
-        </div>
-        <div style="width:1px;background:#c4b5fd;margin:4px 0"></div>
-        <div onclick="openCamera()" style="cursor:pointer;text-align:center">
-          <div class="uicon">📸</div>
-          <p style="margin-top:2px">Kamera Aç</p>
-        </div>
-      </div>
-      <small>Claude otomatik okur ve envantere ekler</small>
-    </div>
-    <div class="cam-wrap" id="cam-wrap">
-      <video id="cam-video" class="cam-video" autoplay playsinline muted></video>
-      <canvas id="cam-canvas" style="display:none"></canvas>
-    </div>
-    <div class="cam-actions" id="cam-actions">
-      <button class="cam-capture" onclick="captureFrame()">📷 Fotoğraf Çek</button>
-      <button class="cam-stop" onclick="closeCamera()">✕ Kapat</button>
-    </div>
-
-    <div class="preview-wrap" id="preview-wrap">
-      <img id="preview-img" class="preview-img" alt="etiket önizleme">
-      <button class="analyze-btn" id="analyze-btn" onclick="runLabelAnalysis()">🔍 Etiketi Analiz Et</button>
-    </div>
-
-    <div id="scan-box-wrap"></div>
-
-    <div class="qas">
-      <button class="qa" onclick="quickAsk('Envanterdeki eksik kimyasalları listele ve hangi deneylerde gerektiğini söyle')">📋 Eksik maddeler</button>
-      <button class="qa" onclick="quickAsk('Envanterdeki yüksek riskli kimyasalları listele, güvenlik uyarıları ver')">⚠️ Risk analizi</button>
-      <button class="qa" onclick="quickAsk('Hangi deneylerde HCl gerekiyor?')">🔎 HCl kullanan deneyler</button>
-      <button class="qa" onclick="quickAsk('Laboratuvar genel güvenlik kontrol listesi hazırla')">✅ Güvenlik listesi</button>
-    </div>
-
-    <div class="msgs" id="msgs">
-      <div class="msg sys">Merhaba! Etiket fotoğrafı yükleyebilir veya laboratuvar hakkında soru sorabilirsiniz.</div>
-    </div>
-
-    <div class="chat-in">
-      <div class="chat-row">
-        <textarea class="chat-ta" id="chat-ta" placeholder="Sorunuzu yazın..." rows="1"
-          onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendMsg()}"
-          oninput="autoResize(this)"></textarea>
-        <button class="send-btn" id="send-btn" onclick="sendMsg()">➤</button>
-      </div>
-    </div>
   </div>
 
 </div>
@@ -509,7 +388,7 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:linear-gradient(135d
       </div>
       <div class="rapor-bilgi-grid">
         <div class="rapor-bilgi-cell"><span class="rapor-bilgi-lbl">Deney Adı / No</span><span class="rapor-bilgi-val" id="rpr-ad"></span></div>
-        <div class="rapor-bilgi-cell"><span class="rapor-bilgi-lbl">Deney Tarihi</span><span class="rapor-bilgi-val" id="rpr-tarih">___ / ___ / ____</span></div>
+        <div class="rapor-bilgi-cell"><span class="rapor-bilgi-lbl">Deney Tarihi</span><span class="rapor-bilgi-val">___ / ___ / 202_</span></div>
         <div class="rapor-bilgi-cell"><span class="rapor-bilgi-lbl">Öğrencinin Adı Soyadı</span><span class="rapor-bilgi-val"></span></div>
         <div class="rapor-bilgi-cell"><span class="rapor-bilgi-lbl">Sınıfı / Şubesi</span><span class="rapor-bilgi-val"></span></div>
         <div class="rapor-bilgi-cell"><span class="rapor-bilgi-lbl">Öğrenci Numarası</span><span class="rapor-bilgi-val"></span></div>
@@ -7036,6 +6915,85 @@ function buildSidebar() {
 function lsGetYillikPlanlar() { try { var d=localStorage.getItem('lab_yillik_planlar'); return d?JSON.parse(d):[]; } catch(e){return [];} }
 function lsSetYillikPlanlar(d) { try { localStorage.setItem('lab_yillik_planlar',JSON.stringify(d)); } catch(e){} sbPush('lab_yillik_planlar',d); }
 
+function lsGetPdfPlanlar() { try { var d=localStorage.getItem('lab_pdf_planlar'); return d?JSON.parse(d):[]; } catch(e){return [];} }
+function lsSetPdfPlanlar(d) { try { localStorage.setItem('lab_pdf_planlar',JSON.stringify(d)); } catch(e){ toast('PDF kaydedilemedi: depolama dolu olabilir'); } }
+
+function openPdfYukleModal() {
+  var overlay = document.createElement('div');
+  overlay.className = 'overlay'; overlay.id = 'pdf-overlay';
+  overlay.onclick = function(e){ if(e.target===overlay) kapat('pdf-overlay'); };
+  var modal = document.createElement('div');
+  modal.className = 'modal'; modal.style.maxWidth = '460px';
+  modal.innerHTML = '<div class="modal-hd"><h3>PDF Plan Yükle</h3><button class="modal-close" onclick="kapat(\'pdf-overlay\')">✕</button></div>' +
+    '<div class="modal-body">' +
+    '<div class="form-row"><label class="form-lbl">Plan Adı *</label><input class="form-input" id="pf-ad" placeholder="Örn: 11-A Kimya Yıllık Planı"></div>' +
+    '<div class="form-row" style="margin-top:8px"><label class="form-lbl">Öğretmen</label><input class="form-input" id="pf-ogr" placeholder="Ad Soyad"></div>' +
+    '<div class="form-row" style="margin-top:8px"><label class="form-lbl">Sınıf</label><input class="form-input" id="pf-sinif" placeholder="Örn: 11-A"></div>' +
+    '<div id="pdf-drop" style="margin-top:12px;border:2px dashed #c4b5fd;border-radius:12px;padding:20px;text-align:center;background:#faf5ff;cursor:pointer" onclick="document.getElementById(\'pf-file\').click()">' +
+    '<input type="file" id="pf-file" accept=".pdf" style="display:none">' +
+    '<div style="font-size:28px">📄</div>' +
+    '<div style="font-size:13px;font-weight:700;color:#6d28d9;margin-top:6px">PDF dosyasını seçin</div>' +
+    '<div style="font-size:11px;color:#a78bfa;margin-top:4px">Yalnızca .pdf desteklenir • Max 8 MB</div>' +
+    '</div>' +
+    '<div id="pdf-durum" style="font-size:12px;color:#7c3aed;min-height:20px;margin-top:8px"></div>' +
+    '</div>' +
+    '<div class="modal-ft"><button class="btn-secondary" onclick="kapat(\'pdf-overlay\')">İptal</button><button class="btn-primary" id="pf-kaydet-btn" onclick="pdfPlanKaydet()">Kaydet</button></div>';
+  overlay.appendChild(modal);
+  document.body.appendChild(overlay);
+  var pdfB64 = null;
+  document.getElementById('pf-file').onchange = function() {
+    var file = this.files[0];
+    if (!file) return;
+    if (file.size > 8 * 1024 * 1024) { document.getElementById('pdf-durum').textContent = '⚠️ Dosya 8 MB\'dan büyük, yüklenemez.'; return; }
+    document.getElementById('pdf-durum').textContent = '⏳ Yükleniyor: ' + file.name;
+    var reader = new FileReader();
+    reader.onload = function(e) {
+      window._pdfPlanB64 = e.target.result;
+      window._pdfPlanAd = file.name;
+      document.getElementById('pdf-durum').innerHTML = '✅ <strong>' + file.name + '</strong> hazır (' + Math.round(file.size/1024) + ' KB)';
+      document.getElementById('pdf-drop').style.borderColor = '#10b981';
+    };
+    reader.readAsDataURL(file);
+  };
+}
+
+function pdfPlanKaydet() {
+  var ad = (document.getElementById('pf-ad').value || '').trim();
+  var ogr = (document.getElementById('pf-ogr').value || '').trim();
+  var sinif = (document.getElementById('pf-sinif').value || '').trim();
+  if (!ad) { toast('Plan adı zorunlu'); return; }
+  if (!window._pdfPlanB64) { toast('Önce PDF seçin'); return; }
+  var planlar = lsGetPdfPlanlar();
+  planlar.push({ id: Date.now(), ad: ad, ogretmen: ogr, sinif: sinif, dosyaAd: window._pdfPlanAd||'plan.pdf', tarih: new Date().toLocaleDateString('tr-TR'), pdfData: window._pdfPlanB64 });
+  lsSetPdfPlanlar(planlar);
+  window._pdfPlanB64 = null;
+  kapat('pdf-overlay');
+  render();
+  toast('PDF plan kaydedildi');
+}
+
+function pdfPlanAc(idx) {
+  var planlar = lsGetPdfPlanlar();
+  var plan = planlar[idx];
+  if (!plan || !plan.pdfData) return;
+  var byteStr = atob(plan.pdfData.split(',')[1]);
+  var ab = new ArrayBuffer(byteStr.length);
+  var ia = new Uint8Array(ab);
+  for (var i=0; i<byteStr.length; i++) ia[i] = byteStr.charCodeAt(i);
+  var blob = new Blob([ab], {type:'application/pdf'});
+  var url = URL.createObjectURL(blob);
+  window.open(url, '_blank');
+}
+
+function pdfPlanSil(idx) {
+  if (!confirm('Bu PDF planı silinsin mi?')) return;
+  var planlar = lsGetPdfPlanlar();
+  planlar.splice(idx, 1);
+  lsSetPdfPlanlar(planlar);
+  render();
+  toast('Plan silindi');
+}
+
 var yillikPlanFiltre = '';  // sinifKey filtresi
 
 // MEB takviminden tüm öğretim haftalarını üret
@@ -7082,7 +7040,8 @@ function renderYillikPlanlar() {
   html += '<div style="font-size:11px;color:#7c3aed;margin-top:2px">MEB 2025-2026 iş takvimi ile otomatik bağlantılı</div>';
   html += '</div>';
   html += '<button class="add-btn" onclick="openYeniPlanModal()">＋ Yeni Plan</button>';
-  html += '<button class="add-btn" style="background:linear-gradient(135deg,#3b82f6,#1d4ed8)" onclick="openDosyaYukleModal()">&#x2b06; Dosya Yükle</button>';
+  html += '<button class="add-btn" style="background:linear-gradient(135deg,#3b82f6,#1d4ed8)" onclick="openDosyaYukleModal()">&#x2b06; Excel/Word Yükle</button>';
+  html += '<button class="add-btn" style="background:linear-gradient(135deg,#dc2626,#991b1b)" onclick="openPdfYukleModal()">&#x1f4c4; PDF Plan Yükle</button>';
   html += '</div>';
 
   // Takvim özeti
@@ -7141,7 +7100,6 @@ function renderYillikPlanlar() {
     html += '</div>';
     html += '<div style="display:flex;gap:5px">';
     html += '<button class="edit-btn" onclick="togglePlanDetay(\'plan-'+realIdx+'\')">Detay ›</button>';
-    html += '<button class="edit-btn" style="background:linear-gradient(135deg,#3b82f6,#1d4ed8);color:#fff" onclick="toggleKazanimPanel('+realIdx+')">📋 Kazanımlar</button>';
     html += '<button style="background:#dc2626;color:#fff;border:none;border-radius:7px;padding:4px 8px;font-size:11px;cursor:pointer;font-weight:700" onclick="silYillikPlan('+realIdx+')">Sil</button>';
     html += '</div></div>';
     // İlerleme
@@ -7198,23 +7156,6 @@ function renderYillikPlanlar() {
       });
     }
     html += '</tbody></table></div></div>';
-    // Kazanım Görüntüleyici Paneli
-    html += '<div id="plan-kazan-'+realIdx+'" style="display:none;border-top:2px solid #3b82f6;padding:14px 16px;background:linear-gradient(135deg,#eff6ff,#f0f9ff)">';
-    html += '<div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:12px">';
-    html += '<span style="font-size:13px;font-weight:800;color:#1d4ed8">📋 Kazanım Görüntüleyici</span>';
-    html += '<button class="edit-btn" style="background:linear-gradient(135deg,#3b82f6,#1d4ed8);color:#fff" onclick="buHaftaGoster('+realIdx+')">📅 Bu Hafta</button>';
-    html += '<select style="border:1px solid #bfdbfe;border-radius:7px;padding:3px 8px;font-size:11px;cursor:pointer;color:#1e40af" id="kazan-hafta-sec-'+realIdx+'" onchange="haftaSecGoster('+realIdx+',this.value)">';
-    html += '<option value="">— Hafta Seç —</option>';
-    if (p.haftalar) {
-      p.haftalar.forEach(function(h, hi) {
-        var kisa = h.konu ? (h.konu.substring(0,22)+(h.konu.length>22?'…':'')) : '';
-        html += '<option value="'+hi+'">'+h.haftaNo+'. Hafta — '+h.pazartesi+(kisa?' ('+kisa+')':'')+'</option>';
-      });
-    }
-    html += '</select>';
-    html += '</div>';
-    html += '<div id="kazan-icerik-'+realIdx+'" style="color:#6b7280;font-size:12px">↑ "Bu Hafta" veya hafta listesinden seçim yapın</div>';
-    html += '</div>';
     html += '</div>';
   });
   html += '</div>';
@@ -7294,6 +7235,32 @@ function renderYillikPlanlar() {
     });
     html += '</div>';
   }
+
+  // PDF Planlar bölümü
+  var pdfPlanlar = lsGetPdfPlanlar();
+  html += '<div style="margin-top:20px">';
+  html += '<div style="font-size:14px;font-weight:800;color:#3b0764;margin-bottom:10px">📄 Yüklenen PDF Planlar <span style="font-size:11px;font-weight:400;color:#7c3aed">('+pdfPlanlar.length+' plan)</span></div>';
+  if (!pdfPlanlar.length) {
+    html += '<div style="font-size:12px;color:#9ca3af;padding:12px 0">"PDF Plan Yükle" butonu ile PDF planlarınızı yükleyin; buradan açabilirsiniz.</div>';
+  } else {
+    html += '<div style="display:flex;flex-direction:column;gap:8px">';
+    pdfPlanlar.forEach(function(p, i) {
+      html += '<div style="background:#fff;border-radius:12px;border:1px solid #fecaca;padding:12px 16px;display:flex;align-items:center;justify-content:space-between;box-shadow:0 1px 4px rgba(220,38,38,0.07);cursor:pointer" onclick="pdfPlanAc('+i+')">';
+      html += '<div>';
+      html += '<div style="font-size:13px;font-weight:700;color:#1e1b4b">'+p.ad+'</div>';
+      html += '<div style="font-size:11px;color:#6b7280;margin-top:2px">';
+      if (p.sinif) html += p.sinif + ' &bull; ';
+      if (p.ogretmen) html += p.ogretmen + ' &bull; ';
+      html += p.tarih + ' &bull; ' + (p.dosyaAd||'plan.pdf');
+      html += '</div></div>';
+      html += '<div style="display:flex;gap:6px;align-items:center">';
+      html += '<button class="edit-btn" style="background:linear-gradient(135deg,#dc2626,#991b1b);color:#fff" onclick="event.stopPropagation();pdfPlanAc('+i+')">&#x1f4c4; Aç</button>';
+      html += '<button style="background:#fee2e2;color:#dc2626;border:none;border-radius:7px;padding:4px 8px;font-size:11px;cursor:pointer;font-weight:700" onclick="event.stopPropagation();pdfPlanSil('+i+')">Sil</button>';
+      html += '</div></div>';
+    });
+    html += '</div>';
+  }
+  html += '</div>';
 
   document.getElementById('main-content').innerHTML = html;
 }
@@ -7442,70 +7409,6 @@ function silYillikPlan(idx) {
   planlar.splice(idx, 1);
   lsSetYillikPlanlar(planlar);
   renderYillikPlanlar();
-}
-
-function getBuHaftaPazartesi() {
-  var d = new Date();
-  var gun = d.getDay();
-  var diff = gun === 0 ? -6 : 1 - gun;
-  d.setDate(d.getDate() + diff);
-  return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
-}
-
-function toggleKazanimPanel(planIdx) {
-  var el = document.getElementById('plan-kazan-'+planIdx);
-  if (!el) return;
-  var visible = el.style.display !== 'none';
-  el.style.display = visible ? 'none' : 'block';
-  if (!visible) buHaftaGoster(planIdx);
-}
-
-function buHaftaGoster(planIdx) {
-  var buPaz = getBuHaftaPazartesi();
-  var planlar = lsGetYillikPlanlar();
-  var plan = planlar[planIdx]; if (!plan || !plan.haftalar) return;
-  var haftaIdx = -1;
-  plan.haftalar.forEach(function(h, i) { if (h.pazartesi === buPaz) haftaIdx = i; });
-  if (haftaIdx < 0) {
-    var bugun = new Date();
-    var enYakin = null;
-    plan.haftalar.forEach(function(h, i) {
-      var d = new Date(h.pazartesi);
-      if (d <= bugun && (enYakin === null || d > enYakin)) { enYakin = d; haftaIdx = i; }
-    });
-  }
-  gosterKazanimDetay(planIdx, haftaIdx, true);
-}
-
-function haftaSecGoster(planIdx, val) {
-  if (val === '') return;
-  gosterKazanimDetay(planIdx, parseInt(val), false);
-}
-
-function gosterKazanimDetay(planIdx, haftaIdx, buHafta) {
-  var planlar = lsGetYillikPlanlar();
-  var plan = planlar[planIdx]; if (!plan || !plan.haftalar) return;
-  var el = document.getElementById('kazan-icerik-'+planIdx);
-  if (!el) return;
-  if (haftaIdx < 0 || haftaIdx >= plan.haftalar.length) {
-    el.innerHTML = '<div style="color:#9ca3af;font-size:12px">Bu dönem için uygun hafta bulunamadı.</div>';
-    return;
-  }
-  var h = plan.haftalar[haftaIdx];
-  var etiket = buHafta ? '<span style="background:#dbeafe;color:#1d4ed8;padding:2px 8px;border-radius:5px;font-size:10px;font-weight:700;margin-right:6px">📅 Bu Hafta</span>' : '';
-  var html = '<div style="background:white;border-radius:10px;padding:14px;border:1px solid #bfdbfe">';
-  html += '<div style="margin-bottom:10px">'+etiket+'<span style="font-size:14px;font-weight:800;color:#1e40af">'+h.haftaNo+'. Hafta</span></div>';
-  html += '<table style="width:100%;border-collapse:collapse;font-size:12px">';
-  html += '<tr><td style="color:#6b7280;padding:4px 0;width:110px">Tarih</td><td style="font-weight:600;color:#374151">'+h.pazartesi+'</td></tr>';
-  html += '<tr><td style="color:#6b7280;padding:4px 0">Ay</td><td style="font-weight:600;color:#374151">'+(h.ayAd||'—')+'</td></tr>';
-  html += '<tr><td style="color:#6b7280;padding:4px 0">Konu / Deney</td><td style="font-weight:600;color:#374151">'+(h.konu||'—')+'</td></tr>';
-  html += '<tr><td style="color:#6b7280;padding:4px 0">Kazanım</td><td style="font-weight:700;color:#1d4ed8">'+(h.kazanim||'—')+'</td></tr>';
-  html += '<tr><td style="color:#6b7280;padding:4px 0">Durum</td><td><span style="background:'+(h.tamamlandi?'#d1fae5':'#fef3c7')+';color:'+(h.tamamlandi?'#065f46':'#92400e')+';padding:2px 10px;border-radius:6px;font-size:11px;font-weight:700">'+(h.tamamlandi?'✓ Tamamlandı':'○ Bekliyor')+'</span></td></tr>';
-  html += '</table>';
-  html += '</div>';
-  el.innerHTML = html;
-  var sel = document.getElementById('kazan-hafta-sec-'+planIdx);
-  if (sel && !buHafta) sel.value = haftaIdx;
 }
 
 function openYeniPlanModal() {
@@ -8235,7 +8138,11 @@ function toggleUnit(key) {
 function openLab(lab) { state.lab = lab; render(); }
 function openLabByName(el) { var lab = el.getAttribute('data-lab'); state.lab = lab; render(); }
 function esc(s) { s = s.replace(/\\'/g, "'"); return s.replace(/\\/g,'\\\\').replace(/'/g,"\\'").replace(/"/g,'&quot;'); }
-function onSearch(v) { state.search = v; if (state.lab) state.lab = null; render(); }
+function onSearch(v) {
+  state.search = v;
+  if (v.trim()) { state.view = 'inventory'; state.lab = null; }
+  render();
+}
 
 // ===== MODAL =====
 function openAddModal() {
@@ -8293,17 +8200,6 @@ function toast(msg) {
   setTimeout(function(){ t.remove(); }, 2500);
 }
 
-// ===== AI PANEL =====
-var aiOpen = false;
-var chatHistory = [];
-var labelB64 = null;
-var labelMime = 'image/jpeg';
-
-function toggleAI() {
-  aiOpen = !aiOpen;
-  document.getElementById('ai-panel').classList.toggle('hidden', !aiOpen);
-}
-
 function toggleSidebar(force) {
   var sb = document.querySelector('.sidebar');
   var ov = document.getElementById('sidebar-overlay');
@@ -8311,209 +8207,6 @@ function toggleSidebar(force) {
   sb.classList.toggle('open', open);
   if (ov) ov.classList.toggle('open', open);
 }
-
-function autoResize(el) {
-  el.style.height = 'auto';
-  el.style.height = Math.min(el.scrollHeight, 90) + 'px';
-}
-
-function buildSystemPrompt() {
-  var invLines = INVENTORY.slice(0, 80).map(function(i){
-    return (i.raf||'') + ' | ' + i.name_tr + ' | ' + (i.formula||'') + ' | Risk:' + (i.risk||'');
-  }).join('\n');
-  var courseLines = COURSES.map(function(c){
-    var labList = Object.values(c.units||{}).reduce(function(a,b){ return a.concat(b); }, []).slice(0,6).join(', ');
-    return c.label + ': ' + labList;
-  }).join('\n');
-  return 'Sen bir kimya laboratuvarı asistanısın. Türkçe yanıt verirsin.\n\nEnvanter özeti (ilk 80 madde):\n' + invLines + '\n\nDersler:\n' + courseLines + '\n\nGörevlerin: kimyasal madde soruları, güvenlik uyarıları, deney prosedürleri, envanter analizi, etiket okuma. Kısa ve net yanıtlar ver.';
-}
-
-function callClaude(messages, imgB64, imgMime, callback) {
-  var apiMessages = messages.map(function(m) {
-    if (m.hasImg && imgB64) {
-      return { role: 'user', content: [
-        { type: 'image', source: { type: 'base64', media_type: imgMime, data: imgB64 } },
-        { type: 'text', text: m.content }
-      ]};
-    }
-    return { role: m.role, content: m.content };
-  });
-  fetch('https://api.anthropic.com/v1/messages', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ model: 'claude-sonnet-4-20250514', max_tokens: 1000, system: buildSystemPrompt(), messages: apiMessages })
-  })
-  .then(function(r){ return r.json(); })
-  .then(function(data){
-    if (data.error) { callback(null, data.error.message); return; }
-    callback(data.content[0].text, null);
-  })
-  .catch(function(e){ callback(null, e.message); });
-}
-
-function appendMsg(role, text, imgSrc) {
-  var msgs = document.getElementById('msgs');
-  var div = document.createElement('div');
-  div.className = 'msg ' + role;
-  if (imgSrc) {
-    var img = document.createElement('img');
-    img.src = imgSrc; img.className = 'msg-img'; div.appendChild(img);
-  }
-  div.appendChild(document.createTextNode(text));
-  msgs.appendChild(div);
-  msgs.scrollTop = msgs.scrollHeight;
-}
-
-function showTyping() {
-  var msgs = document.getElementById('msgs');
-  var d = document.createElement('div');
-  d.className = 'typing'; d.id = 'typing';
-  d.innerHTML = '<span></span><span></span><span></span>';
-  msgs.appendChild(d); msgs.scrollTop = msgs.scrollHeight;
-}
-function hideTyping() { var t = document.getElementById('typing'); if (t) t.remove(); }
-
-function sendMsg() {
-  var ta = document.getElementById('chat-ta');
-  var text = ta.value.trim();
-  if (!text) return;
-  ta.value = ''; ta.style.height = 'auto';
-  document.getElementById('send-btn').disabled = true;
-  var hasImg = !!labelB64;
-  appendMsg('user', text, hasImg ? ('data:' + labelMime + ';base64,' + labelB64) : null);
-  var entry = { role: 'user', content: text };
-  if (hasImg) entry.hasImg = true;
-  chatHistory.push(entry);
-  showTyping();
-  callClaude(chatHistory, labelB64, labelMime, function(reply, err) {
-    hideTyping();
-    if (err) { appendMsg('ai', '⚠️ Hata: ' + err); }
-    else { appendMsg('ai', reply); chatHistory.push({ role: 'assistant', content: reply }); }
-    labelB64 = null;
-    document.getElementById('preview-wrap').style.display = 'none';
-    document.getElementById('scan-box-wrap').innerHTML = '';
-    document.getElementById('send-btn').disabled = false;
-  });
-}
-
-function quickAsk(text) {
-  document.getElementById('chat-ta').value = text;
-  sendMsg();
-}
-
-// ===== CAMERA =====
-var camStream = null;
-
-function openCamera() {
-  if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
-    toast('Kamera bu tarayıcıda desteklenmiyor');
-    return;
-  }
-  navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } })
-    .then(function(stream) {
-      camStream = stream;
-      var video = document.getElementById('cam-video');
-      video.srcObject = stream;
-      document.getElementById('cam-wrap').style.display = 'block';
-      document.getElementById('cam-actions').style.display = 'flex';
-    })
-    .catch(function(err) {
-      toast('Kamera izni reddedildi: ' + err.message);
-    });
-}
-
-function captureFrame() {
-  var video = document.getElementById('cam-video');
-  var canvas = document.getElementById('cam-canvas');
-  canvas.width = video.videoWidth;
-  canvas.height = video.videoHeight;
-  canvas.getContext('2d').drawImage(video, 0, 0);
-  var dataUrl = canvas.toDataURL('image/jpeg', 0.9);
-  labelB64 = dataUrl.split(',')[1];
-  labelMime = 'image/jpeg';
-  document.getElementById('preview-img').src = dataUrl;
-  document.getElementById('preview-wrap').style.display = 'block';
-  document.getElementById('scan-box-wrap').innerHTML = '';
-  closeCamera();
-  runLabelAnalysis();
-}
-
-function closeCamera() {
-  if (camStream) {
-    camStream.getTracks().forEach(function(t) { t.stop(); });
-    camStream = null;
-  }
-  document.getElementById('cam-wrap').style.display = 'none';
-  document.getElementById('cam-actions').style.display = 'none';
-}
-
-// ===== LABEL PHOTO =====
-function onLabelPick(event) {
-  var file = event.target.files[0];
-  if (!file) return;
-  labelMime = file.type || 'image/jpeg';
-  var reader = new FileReader();
-  reader.onload = function(e) {
-    labelB64 = e.target.result.split(',')[1];
-    document.getElementById('preview-img').src = e.target.result;
-    document.getElementById('preview-wrap').style.display = 'block';
-    document.getElementById('scan-box-wrap').innerHTML = '';
-    runLabelAnalysis();
-  };
-  reader.readAsDataURL(file);
-}
-
-function runLabelAnalysis() {
-  if (!labelB64) return;
-  var btn = document.getElementById('analyze-btn');
-  btn.disabled = true; btn.textContent = '⏳ Analiz ediliyor...';
-  var prompt = 'Bu kimyasal madde etiketi fotoğrafını incele. Aşağıdaki bilgileri JSON olarak döndür (sadece JSON, başka açıklama ekleme):\n{"name_tr":"Türkçe kimyasal adı","name_en":"İngilizce kimyasal adı","formula":"Kimyasal formül","mol":"Mol ağırlığı sadece sayı","raf":"Raf numarası veya boş","type":"Kimyasal türü","risk":"Düşük veya Orta veya Yüksek","danger":"Kısa tehlike açıklaması","kod":"Ürün kodu veya boş"}';
-  callClaude([{ role: 'user', content: prompt, hasImg: true }], labelB64, labelMime, function(reply, err) {
-    btn.disabled = false; btn.textContent = '🔍 Etiketi Analiz Et';
-    if (err) { appendMsg('ai', '⚠️ Etiket okunamadı: ' + err); return; }
-    try {
-      var m = reply.match(/\{[\s\S]*\}/);
-      if (!m) throw new Error('JSON bulunamadı');
-      var data = JSON.parse(m[0]);
-      showScanResult(data);
-    } catch(e) {
-      appendMsg('ai', '📷 Etiket analizi:\n' + reply);
-    }
-  });
-}
-
-function showScanResult(data) {
-  var fields = [
-    ['Ad (TR)', data.name_tr], ['Ad (EN)', data.name_en],
-    ['Formül', data.formula], ['Mol Ağ.', data.mol ? data.mol + ' g/mol' : ''],
-    ['Raf No', data.raf], ['Tür', data.type], ['Risk', data.risk], ['Tehlike', data.danger]
-  ].filter(function(f){ return f[1]; });
-  var rows = fields.map(function(f){ return '<div class="scan-row"><span class="scan-k">' + f[0] + ':</span><span class="scan-v">' + f[1] + '</span></div>'; }).join('');
-  var encoded = encodeURIComponent(JSON.stringify(data));
-  var html = '<div class="scan-box"><h4>✅ Etiket Okundu</h4>' + rows + '<div class="scan-acts"><button class="scan-use" onclick="applyScan(decodeURIComponent(\'' + encoded + '\'))">+ Envantere Ekle</button><button class="scan-disc" onclick="document.getElementById(\'scan-box-wrap\').innerHTML=\'\'">Yoksay</button></div></div>';
-  document.getElementById('scan-box-wrap').innerHTML = html;
-}
-
-function applyScan(jsonStr) {
-  var data = JSON.parse(jsonStr);
-  state.editIdx = null;
-  document.getElementById('modal-title').textContent = 'Etiket Verisi — Kaydet';
-  document.getElementById('del-btn').style.display = 'none';
-  document.getElementById('f-raf').value = data.raf || '';
-  document.getElementById('f-kod').value = data.kod || '';
-  document.getElementById('f-name_tr').value = data.name_tr || '';
-  document.getElementById('f-name_en').value = data.name_en || '';
-  document.getElementById('f-formula').value = data.formula || '';
-  document.getElementById('f-mol').value = data.mol || '';
-  document.getElementById('f-type').value = data.type || '';
-  document.getElementById('f-risk').value = data.risk || '';
-  document.getElementById('f-danger').value = data.danger || '';
-  document.getElementById('modal').style.display = 'flex';
-  state.view = 'inventory'; render();
-  document.getElementById('scan-box-wrap').innerHTML = '';
-  toast('Etiket bilgileri forma aktarıldı — kontrol edip kaydedin');
-}
-
 
 // ===== DENEY YÖNETİMİ =====
 function renderDeney(q) {
@@ -8913,11 +8606,6 @@ function openLabRaporuFromDeney(idx) {
 
 function openLabRaporu(denyAdi, aims, materials, procedure) {
   document.getElementById('rpr-ad').textContent = denyAdi || '';
-  var bugun = new Date();
-  document.getElementById('rpr-tarih').textContent =
-    String(bugun.getDate()).padStart(2,'0') + ' / ' +
-    String(bugun.getMonth()+1).padStart(2,'0') + ' / ' +
-    bugun.getFullYear();
   var amacEl = document.getElementById('rpr-amac');
   if (aims) { amacEl.innerHTML = aims; } else { amacEl.innerHTML = '<div class="rapor-satir"></div><div class="rapor-satir"></div>'; }
   var malzemeEl = document.getElementById('rpr-malzeme');
