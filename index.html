@@ -10729,6 +10729,8 @@ var KIMYA_DERSLER = {
 function lsGetPersonel() {
   var v = lsGet('lab_personel');
   if (!v || !v.length) {
+    var _savedTs = localStorage.getItem('_ts_lab_personel');
+    if (_savedTs) return v; // daha önce kaydedilip sonradan boşaltıldıysa dokunma
     v = [
       {
         ad:'Süleyman YILMAZ',
