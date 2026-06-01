@@ -6970,19 +6970,34 @@ var SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZ
 var SB_HDR = { 'apikey': SB_KEY, 'Authorization': 'Bearer ' + SB_KEY, 'Content-Type': 'application/json', 'Prefer': 'resolution=merge-duplicates' };
 
 function sbPush(key, val) {
+  var ts = Date.now();
+  try { localStorage.setItem('_ts_' + key, String(ts)); } catch(e) {}
   fetch(SB_URL + '/rest/v1/lab_data', {
     method: 'POST', headers: SB_HDR,
-    body: JSON.stringify({ key: key, value: val, updated_at: new Date().toISOString() })
+    body: JSON.stringify({ key: key, value: val, updated_at: new Date(ts).toISOString() })
   }).catch(function(){});
 }
 
 async function sbPull() {
   try {
-    var res = await fetch(SB_URL + '/rest/v1/lab_data?select=key,value', { headers: SB_HDR });
+    var res = await fetch(SB_URL + '/rest/v1/lab_data?select=key,value,updated_at', { headers: SB_HDR });
     if (!res.ok) return;
     var rows = await res.json();
     rows.forEach(function(r) {
-      try { localStorage.setItem(r.key, JSON.stringify(r.value)); } catch(e) {}
+      try {
+        var localTs = parseInt(localStorage.getItem('_ts_' + r.key) || '0', 10);
+        var supaTs  = r.updated_at ? new Date(r.updated_at).getTime() : 0;
+        // Supabase verisi yerel kayıttan daha güncel ise güncelle;
+        // aksi hâlde yerel veriyi koru (silme sorununu önler)
+        if (supaTs > localTs) {
+          localStorage.setItem(r.key, JSON.stringify(r.value));
+          localStorage.setItem('_ts_' + r.key, String(supaTs));
+        } else if (!localStorage.getItem(r.key)) {
+          // Yerel hiç veri yoksa Supabase'den al
+          localStorage.setItem(r.key, JSON.stringify(r.value));
+          localStorage.setItem('_ts_' + r.key, String(supaTs));
+        }
+      } catch(e) {}
     });
   } catch(e) {}
 }
