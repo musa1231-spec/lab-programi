@@ -8263,37 +8263,102 @@ function silSinif(si) {
 }
 
 function openOgrenciModal(sinifIdx) {
-  var body = '<div class="form-row"><label class="form-lbl">Adı Soyadı *</label><input class="form-input" id="fo-ad" placeholder="Ahmet Yılmaz"></div>';
+  var body = '';
+  body += '<div style="display:flex;gap:6px;margin-bottom:14px">';
+  body += '<button id="ogr-mod-tekil" onclick="ogrModSec(\'tekil\')" style="flex:1;padding:7px;border-radius:8px;font-size:12px;font-weight:700;cursor:pointer;border:2px solid #8b5cf6;background:#8b5cf6;color:#fff">Tekil Ekle</button>';
+  body += '<button id="ogr-mod-toplu" onclick="ogrModSec(\'toplu\')" style="flex:1;padding:7px;border-radius:8px;font-size:12px;font-weight:700;cursor:pointer;border:2px solid #ddd6fe;background:#faf5ff;color:#6d28d9">Toplu Ekle (Liste Yapıştır)</button>';
+  body += '</div>';
+  body += '<div id="ogr-panel-tekil">';
+  body += '<div class="form-row"><label class="form-lbl">Adı Soyadı *</label><input class="form-input" id="fo-ad" placeholder="Ahmet Yılmaz"></div>';
   body += '<div class="form-row"><label class="form-lbl">Okul Numarası</label><input class="form-input" id="fo-no" placeholder="2023001"></div>';
+  body += '</div>';
+  body += '<div id="ogr-panel-toplu" style="display:none">';
+  body += '<div class="form-row"><label class="form-lbl">Öğrenci Listesi</label>';
+  body += '<div style="font-size:10px;color:#9ca3af;margin-bottom:5px">Her satıra bir öğrenci &mdash; <strong>No Ad Soyad</strong> veya sadece <strong>Ad Soyad</strong></div>';
+  body += '<textarea class="form-input" id="fo-toplu" rows="9" placeholder="2023001 Ahmet Yılmaz&#10;2023002 Mehmet Kaya&#10;2023003 Ayşe Demir&#10;..." style="font-family:monospace;font-size:12px;resize:vertical"></textarea></div>';
+  body += '<div id="fo-toplu-onizleme" style="font-size:11px;color:#7c3aed;margin-top:4px;font-weight:600"></div>';
+  body += '</div>';
   body += '<input type="hidden" id="fo-sinif" value="' + sinifIdx + '">';
-  document.getElementById('modal-title').textContent = '＋ Öğrenci Ekle';
+  document.getElementById('modal-title').textContent = '＋ Öğrenci Ekle — ' + (lsGet('lab_siniflar')[sinifIdx]||{}).ad;
   document.getElementById('modal-body').innerHTML = body;
   document.getElementById('del-btn').style.display = 'none';
   document.getElementById('modal-save-btn').onclick = saveOgrenci;
   document.getElementById('modal-save-btn').textContent = 'Ekle';
   document.getElementById('modal').style.display = 'flex';
+  setTimeout(function(){
+    var ta = document.getElementById('fo-toplu');
+    if (ta) ta.addEventListener('input', function(){
+      var n = this.value.split('\n').filter(function(l){ return l.trim(); }).length;
+      var el = document.getElementById('fo-toplu-onizleme');
+      if (el) el.textContent = n > 0 ? n + ' öğrenci eklenecek' : '';
+    });
+  }, 0);
+}
+
+function ogrModSec(mod) {
+  var tekil = document.getElementById('ogr-panel-tekil');
+  var toplu = document.getElementById('ogr-panel-toplu');
+  var bT = document.getElementById('ogr-mod-tekil');
+  var bP = document.getElementById('ogr-mod-toplu');
+  var sBtn = document.getElementById('modal-save-btn');
+  if (mod === 'tekil') {
+    tekil.style.display = 'block'; toplu.style.display = 'none';
+    bT.style.cssText = 'flex:1;padding:7px;border-radius:8px;font-size:12px;font-weight:700;cursor:pointer;border:2px solid #8b5cf6;background:#8b5cf6;color:#fff';
+    bP.style.cssText = 'flex:1;padding:7px;border-radius:8px;font-size:12px;font-weight:700;cursor:pointer;border:2px solid #ddd6fe;background:#faf5ff;color:#6d28d9';
+    sBtn.onclick = saveOgrenci; sBtn.textContent = 'Ekle';
+  } else {
+    tekil.style.display = 'none'; toplu.style.display = 'block';
+    bP.style.cssText = 'flex:1;padding:7px;border-radius:8px;font-size:12px;font-weight:700;cursor:pointer;border:2px solid #8b5cf6;background:#8b5cf6;color:#fff';
+    bT.style.cssText = 'flex:1;padding:7px;border-radius:8px;font-size:12px;font-weight:700;cursor:pointer;border:2px solid #ddd6fe;background:#faf5ff;color:#6d28d9';
+    sBtn.onclick = saveTopluOgrenci; sBtn.textContent = 'Toplu Ekle';
+  }
 }
 
 function saveOgrenci() {
   var adEl    = document.getElementById('fo-ad');
   var noEl    = document.getElementById('fo-no');
   var sinifEl = document.getElementById('fo-sinif');
-  if (!adEl || !noEl || !sinifEl) { toast('Form hatası, lütfen tekrar deneyin.'); return; }
+  if (!adEl || !noEl || !sinifEl) { toast('Form hatası!'); return; }
   var ad = (adEl.value || '').trim();
-  if (!ad) { toast('Ad zorunlu!'); return; }
+  if (!ad) { toast('Ad Soyad zorunlu!'); return; }
   var sinifIdx = parseInt(sinifEl.value, 10);
   if (isNaN(sinifIdx)) sinifIdx = 0;
   var ogrs = lsGet('lab_ogrenciler');
-  ogrs.push({ ad: ad, no: noEl.value.trim(), sinifIdx: sinifIdx });
+  ogrs.push({ ad: ad, no: (noEl.value||'').trim(), sinifIdx: sinifIdx });
   lsSet('lab_ogrenciler', ogrs);
   closeModal(); toast('Öğrenci eklendi!'); renderSinif('');
 }
 
+function saveTopluOgrenci() {
+  var ta      = document.getElementById('fo-toplu');
+  var sinifEl = document.getElementById('fo-sinif');
+  if (!ta || !sinifEl) return;
+  var sinifIdx = parseInt(sinifEl.value, 10);
+  if (isNaN(sinifIdx)) sinifIdx = 0;
+  var lines = ta.value.split('\n').map(function(l){ return l.trim(); }).filter(function(l){ return l; });
+  if (!lines.length) { toast('Liste boş!'); return; }
+  var ogrs = lsGet('lab_ogrenciler');
+  var eklenen = 0;
+  lines.forEach(function(line) {
+    var parts = line.split(/\s+/);
+    var no = '', ad = '';
+    if (parts.length >= 2 && /^\d+$/.test(parts[0])) {
+      no = parts[0]; ad = parts.slice(1).join(' ');
+    } else {
+      ad = line;
+    }
+    if (ad) { ogrs.push({ ad: ad, no: no, sinifIdx: sinifIdx }); eklenen++; }
+  });
+  lsSet('lab_ogrenciler', ogrs);
+  closeModal(); toast(eklenen + ' öğrenci eklendi!'); renderSinif('');
+}
+
 function silOgrenci(oi) {
+  if (!confirm('Bu öğrenci sınıftan çıkarılsın mı?')) return;
   var ogrs = lsGet('lab_ogrenciler');
   ogrs.splice(oi, 1);
   lsSet('lab_ogrenciler', ogrs);
-  toast('Öğrenci silindi.'); renderSinif('');
+  toast('Öğrenci çıkarıldı.'); renderSinif('');
 }
 
 function renderSinifTab1(siniflar) {
