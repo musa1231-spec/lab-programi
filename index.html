@@ -8116,19 +8116,22 @@ function renderSinifTab0(siniflar, q) {
     html += '<div class="sinif-card-hdr"><span style="font-size:20px">🏫</span>';
     html += '<div class="sinif-card-name">' + s.ad + '</div>';
     html += '<span class="sinif-card-meta">' + (s.dersLabel||'') + '</span>';
-    html += '<span class="sinif-card-meta">' + ogrenciler.length + ' öğrenci</span>';
-    html += '<button class="sil-btn" onclick=\"silSinif(' + si + ')">🗑️</button></div>';
+    html += '<span style="background:#ede9fe;color:#6d28d9;border-radius:12px;padding:2px 10px;font-size:11px;font-weight:700">' + ogrenciler.length + ' öğrenci</span>';
+    html += '<button onclick="openOgrenciModal(' + si + ')" style="background:linear-gradient(135deg,#8b5cf6,#6d28d9);color:#fff;border:none;border-radius:8px;padding:5px 13px;font-size:12px;font-weight:700;cursor:pointer">＋ Öğrenci Ekle</button>';
+    html += '<button class="sil-btn" onclick="silSinif(' + si + ')">🗑️</button></div>';
     html += '<ul class="ogrenci-list">';
-    ogrenciler.forEach(function(o, oi) {
+    if (!ogrenciler.length) {
+      html += '<li style="padding:8px 4px;font-size:12px;color:#9ca3af;font-style:italic">Henüz öğrenci eklenmedi</li>';
+    }
+    ogrenciler.forEach(function(o) {
       var realOIdx = allOgrs.findIndex(function(g){ return g.sinifIdx === o.sinifIdx && g.no === o.no && g.ad === o.ad; });
       html += '<li class="ogrenci-item">';
       html += '<span class="ogrenci-no">' + (o.no||'—') + '</span>';
       html += '<span style="flex:1">' + o.ad + '</span>';
-      html += '<button class="sil-btn" onclick=\"silOgrenci(' + realOIdx + ')">✕</button>';
+      html += '<button onclick="silOgrenci(' + realOIdx + ')" style="background:#fee2e2;color:#dc2626;border:none;border-radius:6px;padding:3px 10px;font-size:11px;font-weight:700;cursor:pointer">Çıkar</button>';
       html += '</li>';
     });
     html += '</ul>';
-    html += '<button style="margin-top:8px;background:#ede9fe;color:#6d28d9;border:none;border-radius:7px;padding:5px 12px;font-size:12px;cursor:pointer;font-weight:600" onclick=\"openOgrenciModal(' + si + ')">＋ Öğrenci Ekle</button>';
     html += '</div>';
   });
   return html;
